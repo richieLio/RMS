@@ -37,7 +37,7 @@ namespace BussinessObject.Services.UserServices
                 {
                     Result.IsSuccess = false;
                     Result.Code = 400;
-                    Result.Message = "Not found";
+                    Result.Message = "Please verify your account";
                     return Result;
                 }
                 else
@@ -97,7 +97,7 @@ namespace BussinessObject.Services.UserServices
                 }
                 else
                 {
-                    string verificationToken = GenerateVerificationToken();
+                    string OTP = GenerateOTP();
                     DateTime expirationTime = DateTime.Now.AddMinutes(10);
                     var config = new MapperConfiguration(cfg =>
                     {
@@ -111,13 +111,13 @@ namespace BussinessObject.Services.UserServices
              
                     string Html = File.ReadAllText(FilePath);
                     Html = Html.Replace("{{Email}}", RegisterForm.Email);
-                    Html = Html.Replace("{{VerificationLink}}", $"https://localhost:7084/verify?token{verificationToken}");
+                    Html = Html.Replace("{{OTP}}", $"{OTP}");
 
                     bool emailSent = await EmailUltilities.SendEmail(RegisterForm.Email, "Email Verification", Html);
 
                     if (emailSent)
                     {
-                        NewUser.VerificationToken = verificationToken;
+                        NewUser.VerificationToken = OTP;
                         NewUser.VerificationTokenExpiration = expirationTime;
                         NewUser.Id = Guid.NewGuid();
                         NewUser.Status = UserStatus.INACTIVE; 
@@ -148,11 +148,11 @@ namespace BussinessObject.Services.UserServices
             return Result;
         }
 
-        private string GenerateVerificationToken()
+        private string GenerateOTP()
         {
-            // Generate a unique token, you can use any method you prefer
-            // For simplicity, you can use GUID
-            return Guid.NewGuid().ToString();
+            Random rnd = new Random();
+            int otp = rnd.Next(100000, 999999); 
+            return otp.ToString();
         }
 
         public async Task<ResultModel> GetUserProfile(Guid userId)
@@ -323,7 +323,7 @@ namespace BussinessObject.Services.UserServices
         {
             try
             {
-                var user = await _userRepository.GetUserByVerificationToken(verificationModel.Token);
+                var user = await _userRepository.GetUserByVerificationToken(verificationModel.OTP);
                 if (user != null && user.VerificationTokenExpiration > DateTime.Now)
                 {
                     
@@ -337,14 +337,23 @@ namespace BussinessObject.Services.UserServices
                         Message = "Email verification successful."
                     };
                 }
-                else
+                else if (user.VerificationTokenExpiration < DateTime.Now)
                 {
-                    // Token is invalid or expired
+                  
                     return new ResultModel
                     {
                         IsSuccess = false,
                         Code = 400,
-                        Message = "Invalid or expired verification token."
+                        Message = "Expired verification otp.(10 minutes)"
+                    };
+                }
+                else
+                {
+                    return new ResultModel
+                    {
+                        IsSuccess = false,
+                        Code = 400,
+                        Message = "Wrong verification otp."
                     };
                 }
             }
