@@ -6,10 +6,6 @@ namespace DataAccess.Entities;
 
 public partial class HouseManagementContext : DbContext
 {
-    public HouseManagementContext()
-    {
-    }
-
     public HouseManagementContext(DbContextOptions<HouseManagementContext> options)
         : base(options)
     {
@@ -31,29 +27,30 @@ public partial class HouseManagementContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
-  /*  protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseMySQL("Data Source=MSI;Initial Catalog=HouseManagement;Integrated Security=True;Encrypt=True;Trust Server Certificate=True");
-*/
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Bill>(entity =>
         {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
             entity.ToTable("Bill");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.HasIndex(e => e.RoomId, "FK_Bill_Room");
+
+            entity.HasIndex(e => e.CreateBy, "FK_Bill_User");
+
             entity.Property(e => e.ElectricityUnitPrice)
-                .HasComment("Đơn giá điện")
-                .HasColumnType("money");
+                .HasPrecision(19, 4)
+                .HasComment("Đơn giá điện");
             entity.Property(e => e.ElectricityUsed).HasComment("Khối lượng điện đã sử dụng");
-            entity.Property(e => e.Month).HasColumnType("datetime");
-            entity.Property(e => e.PaymentDate).HasColumnType("datetime");
-            entity.Property(e => e.RentAmount).HasColumnType("money");
-            entity.Property(e => e.ServicePrice).HasColumnType("money");
-            entity.Property(e => e.TotalPice).HasColumnType("money");
+            entity.Property(e => e.Month).HasMaxLength(6);
+            entity.Property(e => e.PaymentDate).HasMaxLength(6);
+            entity.Property(e => e.RentAmount).HasPrecision(19, 4);
+            entity.Property(e => e.ServicePrice).HasPrecision(19, 4);
+            entity.Property(e => e.TotalPice).HasPrecision(19, 4);
             entity.Property(e => e.WaterUnitPrice)
-                .HasComment("Đơn giá nước")
-                .HasColumnType("money");
+                .HasPrecision(19, 4)
+                .HasComment("Đơn giá nước");
             entity.Property(e => e.WaterUsed).HasComment("Số lượng nước đã sử dụng");
 
             entity.HasOne(d => d.CreateByNavigation).WithMany(p => p.Bills)
@@ -67,14 +64,24 @@ public partial class HouseManagementContext : DbContext
 
         modelBuilder.Entity<Contract>(entity =>
         {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
             entity.ToTable("Contract");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
-            entity.Property(e => e.EndDate).HasColumnType("datetime");
+            entity.HasIndex(e => e.RoomId, "FK_Contract_Room");
+
+            entity.HasIndex(e => e.OwnerId, "FK_Contract_User");
+
+            entity.HasIndex(e => e.CustomerId, "FK_Contract_User1");
+
+            entity.Property(e => e.EndDate).HasMaxLength(6);
             entity.Property(e => e.FileUrl)
                 .HasMaxLength(250)
                 .HasColumnName("FileURL");
-            entity.Property(e => e.StartDate).HasColumnType("datetime");
+            entity.Property(e => e.ImagesUrl)
+                .HasMaxLength(250)
+                .HasColumnName("ImagesURL");
+            entity.Property(e => e.StartDate).HasMaxLength(6);
 
             entity.HasOne(d => d.Customer).WithMany(p => p.ContractCustomers)
                 .HasForeignKey(d => d.CustomerId)
@@ -91,13 +98,18 @@ public partial class HouseManagementContext : DbContext
 
         modelBuilder.Entity<House>(entity =>
         {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
             entity.ToTable("House");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.HasIndex(e => e.OwnerId, "FK_House_User");
+
             entity.Property(e => e.Address).HasMaxLength(50);
             entity.Property(e => e.HouseAccount).HasMaxLength(50);
             entity.Property(e => e.Name).HasMaxLength(50);
+            entity.Property(e => e.Password).HasMaxLength(512);
             entity.Property(e => e.RoomQuantity).HasComment("Số lượng phòng");
+            entity.Property(e => e.Salt).HasMaxLength(512);
             entity.Property(e => e.Status).HasMaxLength(50);
 
             entity.HasOne(d => d.Owner).WithMany(p => p.Houses)
@@ -107,9 +119,13 @@ public partial class HouseManagementContext : DbContext
 
         modelBuilder.Entity<Notification>(entity =>
         {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
             entity.ToTable("Notification");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.HasIndex(e => e.HouseId, "FK_Notification_House");
+
+            entity.Property(e => e.Content).HasMaxLength(0);
 
             entity.HasOne(d => d.House).WithMany(p => p.Notifications)
                 .HasForeignKey(d => d.HouseId)
@@ -118,11 +134,14 @@ public partial class HouseManagementContext : DbContext
 
         modelBuilder.Entity<Otpverify>(entity =>
         {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
             entity.ToTable("OTPVerify");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
-            entity.Property(e => e.CreatedAt).HasColumnType("datetime");
-            entity.Property(e => e.ExpiredAt).HasColumnType("datetime");
+            entity.HasIndex(e => e.UserId, "FK_OTPVerify_User");
+
+            entity.Property(e => e.CreatedAt).HasMaxLength(6);
+            entity.Property(e => e.ExpiredAt).HasMaxLength(6);
             entity.Property(e => e.OtpCode).HasMaxLength(50);
 
             entity.HasOne(d => d.User).WithMany(p => p.Otpverifies)
@@ -133,10 +152,15 @@ public partial class HouseManagementContext : DbContext
 
         modelBuilder.Entity<Payment>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
+            entity.HasIndex(e => e.OwnerId, "FK_Payments_User");
+
             entity.Property(e => e.AccountNumber).HasMaxLength(50);
             entity.Property(e => e.AccountType).HasMaxLength(50);
-            entity.Property(e => e.QrcodeImage).HasColumnName("QRCodeImage");
+            entity.Property(e => e.QrcodeImage)
+                .HasMaxLength(512)
+                .HasColumnName("QRCodeImage");
             entity.Property(e => e.TransferContent).HasMaxLength(100);
 
             entity.HasOne(d => d.Owner).WithMany(p => p.Payments)
@@ -146,10 +170,14 @@ public partial class HouseManagementContext : DbContext
 
         modelBuilder.Entity<Room>(entity =>
         {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
             entity.ToTable("Room");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.HasIndex(e => e.HouseId, "FK_Room_House");
+
             entity.Property(e => e.Name).HasMaxLength(50);
+            entity.Property(e => e.SecondPassword).HasMaxLength(512);
             entity.Property(e => e.Status).HasMaxLength(50);
 
             entity.HasOne(d => d.House).WithMany(p => p.Rooms)
@@ -159,25 +187,30 @@ public partial class HouseManagementContext : DbContext
 
         modelBuilder.Entity<User>(entity =>
         {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
             entity.ToTable("User");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Address).HasMaxLength(50);
+            entity.Property(e => e.Avatar).HasMaxLength(512);
             entity.Property(e => e.CitizenIdNumber).HasMaxLength(50);
-            entity.Property(e => e.CreatedAt).HasColumnType("datetime");
+            entity.Property(e => e.CreatedAt).HasMaxLength(6);
             entity.Property(e => e.Dob)
-                .HasColumnType("datetime")
+                .HasMaxLength(6)
                 .HasColumnName("DOB");
             entity.Property(e => e.Email).HasMaxLength(50);
             entity.Property(e => e.FullName).HasMaxLength(50);
             entity.Property(e => e.Gender).HasMaxLength(50);
-            entity.Property(e => e.LastLoggedIn).HasColumnType("datetime");
+            entity.Property(e => e.LastLoggedIn).HasMaxLength(6);
             entity.Property(e => e.LicensePlates)
                 .HasMaxLength(50)
                 .HasComment("Biển số xe");
+            entity.Property(e => e.Password).HasMaxLength(512);
             entity.Property(e => e.PhoneNumber).HasMaxLength(50);
             entity.Property(e => e.Role).HasMaxLength(50);
+            entity.Property(e => e.Salt).HasMaxLength(512);
             entity.Property(e => e.Status).HasMaxLength(50);
+            entity.Property(e => e.VerificationToken).HasMaxLength(0);
 
             entity.HasMany(d => d.Rooms).WithMany(p => p.Users)
                 .UsingEntity<Dictionary<string, object>>(
@@ -192,8 +225,9 @@ public partial class HouseManagementContext : DbContext
                         .HasConstraintName("FK_UserRoom_User"),
                     j =>
                     {
-                        j.HasKey("UserId", "RoomId");
+                        j.HasKey("UserId", "RoomId").HasName("PRIMARY");
                         j.ToTable("UserRoom");
+                        j.HasIndex(new[] { "RoomId" }, "FK_UserRoom_Room");
                     });
         });
 

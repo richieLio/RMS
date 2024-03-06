@@ -9,6 +9,7 @@ using System.Text;
 using AutoMapper;
 using DataAccess.Entities;
 using Encoder = Business.Ultilities.Encoder;
+using EmailUltilities = Business.Ultilities.Email;
 using System.Threading.Tasks;
 using DataAccess.Enums;
 using Business.Ultilities;
@@ -95,6 +96,10 @@ namespace BussinessObject.Services.UserServices
                 }
                 else
                 {
+
+                    string verificationToken = GenerateVerificationToken();
+
+
                     var config = new MapperConfiguration(cfg =>
                     {
                         cfg.CreateMap<UserReqModel, User>().ForMember(dest => dest.Password, opt => opt.Ignore()); ;
@@ -102,7 +107,15 @@ namespace BussinessObject.Services.UserServices
                     IMapper mapper = config.CreateMapper();
                     User NewUser = mapper.Map<UserReqModel, User>(RegisterForm);
 
+
+                    string FilePath = "../BusinessObject/TemplateEmail/FirstInformation.html";
+                    string Html = File.ReadAllText(FilePath);
+                    Html = Html.Replace("{{Password}}", RegisterForm.Password);
+                    Html = Html.Replace("{{Email}}", RegisterForm.Email);
+                    bool check = await EmailUltilities.SendEmail(RegisterForm.Email, "Login Information", Html);
                     var HashedPasswordModel = Encoder.CreateHashPassword(RegisterForm.Password);
+
+                   // NewUser.VerificationToken = verificationToken;
                     NewUser.Id = Guid.NewGuid();
                     NewUser.Password = HashedPasswordModel.HashedPassword;
                     NewUser.Salt = HashedPasswordModel.Salt;
@@ -123,6 +136,13 @@ namespace BussinessObject.Services.UserServices
                 Result.ResponseFailed = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
             }
             return Result;
+        }
+
+        private string GenerateVerificationToken()
+        {
+            // Generate a unique token, you can use any method you prefer
+            // For simplicity, you can use GUID
+            return Guid.NewGuid().ToString();
         }
 
         public async Task<ResultModel> GetUserProfile(Guid userId)
