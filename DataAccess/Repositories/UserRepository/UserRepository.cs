@@ -36,6 +36,10 @@ namespace DataAccess.Repositories.UserRepository
             return await _context.Users.Where(x => x.Id.Equals(userId)).FirstOrDefaultAsync();
         }
 
-       
+        public async Task<User> GetUserByVerificationToken(string verificationToken)
+        {
+            // Assuming User entity has a property named VerificationToken
+            return await _context.Users.FirstOrDefaultAsync(u => u.VerificationToken == verificationToken);
+        }
     }
 }
