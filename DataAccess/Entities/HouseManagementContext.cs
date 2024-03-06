@@ -210,7 +210,8 @@ public partial class HouseManagementContext : DbContext
             entity.Property(e => e.Role).HasMaxLength(50);
             entity.Property(e => e.Salt).HasMaxLength(512);
             entity.Property(e => e.Status).HasMaxLength(50);
-            entity.Property(e => e.VerificationToken).HasMaxLength(0);
+            entity.Property(e => e.VerificationToken).HasMaxLength(255);
+            entity.Property(e => e.VerificationTokenExpiration).HasColumnType("datetime");
 
             entity.HasMany(d => d.Rooms).WithMany(p => p.Users)
                 .UsingEntity<Dictionary<string, object>>(

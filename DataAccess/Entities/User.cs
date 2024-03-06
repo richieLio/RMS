@@ -42,6 +42,8 @@ public partial class User
 
     public string? VerificationToken { get; set; }
 
+    public DateTime? VerificationTokenExpiration { get; set; }
+
     public virtual ICollection<Bill> Bills { get; set; } = new List<Bill>();
 
     public virtual ICollection<Contract> ContractCustomers { get; set; } = new List<Contract>();

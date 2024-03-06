@@ -92,42 +92,51 @@ namespace BussinessObject.Services.UserServices
                 {
                     Result.IsSuccess = false;
                     Result.Code = 400;
-                    Result.Message = "Email is existed!";
+                    Result.Message = "Email is already registered!";
                 }
                 else
                 {
-
                     string verificationToken = GenerateVerificationToken();
-
-
+                    DateTime expirationTime = DateTime.Now.AddMinutes(10);
                     var config = new MapperConfiguration(cfg =>
                     {
-                        cfg.CreateMap<UserReqModel, User>().ForMember(dest => dest.Password, opt => opt.Ignore()); ;
+                        cfg.CreateMap<UserReqModel, User>().ForMember(dest => dest.Password, opt => opt.Ignore());
                     });
                     IMapper mapper = config.CreateMapper();
                     User NewUser = mapper.Map<UserReqModel, User>(RegisterForm);
 
+                    string FilePath = "../BussinessObject/TemplateEmail/FirstInformation.html";
 
-                    string FilePath = "../BusinessObject/TemplateEmail/FirstInformation.html";
+             
                     string Html = File.ReadAllText(FilePath);
-                    Html = Html.Replace("{{Password}}", RegisterForm.Password);
                     Html = Html.Replace("{{Email}}", RegisterForm.Email);
-                    bool check = await EmailUltilities.SendEmail(RegisterForm.Email, "Login Information", Html);
-                    var HashedPasswordModel = Encoder.CreateHashPassword(RegisterForm.Password);
+                    Html = Html.Replace("{{VerificationLink}}", $"https://localhost:7084/verify?token={verificationToken}");
 
-                   // NewUser.VerificationToken = verificationToken;
-                    NewUser.Id = Guid.NewGuid();
-                    NewUser.Password = HashedPasswordModel.HashedPassword;
-                    NewUser.Salt = HashedPasswordModel.Salt;
-                    NewUser.Status = UserStatus.ACTIVE;
-                    NewUser.CreatedAt = DateTime.Now;
-                    NewUser.Role = UserEnum.OWNER;
-                    _ = await _userRepository.Insert(NewUser);
-                    Result.IsSuccess = true;
-                    Result.Code = 200;
-                    Result.Message = "Create account successfully!";
+                    bool emailSent = await EmailUltilities.SendEmail(RegisterForm.Email, "Email Verification", Html);
+
+                    if (emailSent)
+                    {
+                        NewUser.VerificationToken = verificationToken;
+                        NewUser.VerificationTokenExpiration = expirationTime;
+                        NewUser.Id = Guid.NewGuid();
+                        NewUser.Status = UserStatus.INACTIVE; 
+                        NewUser.CreatedAt = DateTime.Now;
+                        NewUser.Role = UserEnum.OWNER;
+
+                        _ = await _userRepository.Insert(NewUser);
+
+                        Result.IsSuccess = true;
+                        Result.Code = 200;
+                        Result.Message = "Verification email sent successfully!";
+                    }
+                    else
+                    {
+                        // Handle email sending failure
+                        Result.IsSuccess = false;
+                        Result.Code = 500;
+                        Result.Message = "Failed to send verification email. Please try again later.";
+                    }
                 }
-
             }
             catch (Exception e)
             {
