@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using DataAccess.ResultModel;
 using Microsoft.AspNetCore.Authorization;
 using BussinessObject.Services.UserServices;
+using DataAccess.Models.EmailModel;
 
 namespace API.Controllers
 {
@@ -93,5 +94,20 @@ namespace API.Controllers
            ResultModel result = await _user.ResetPassword(ResetPasswordReqModel);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
+        [HttpPost("verify-email")]
+        public async Task<IActionResult> VerifyEmail([FromBody] EmailVerificationReqModel verificationModel)
+        {
+            try
+            {
+                ResultModel result = await _user.VerifyEmail(verificationModel);
+                return result.IsSuccess ? Ok(result) : BadRequest(result);
+            }
+            catch (Exception ex)
+            {
+               
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
+        }
+
     }
 }

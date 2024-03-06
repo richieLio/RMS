@@ -13,6 +13,7 @@ using EmailUltilities = Business.Ultilities.Email;
 using System.Threading.Tasks;
 using DataAccess.Enums;
 using Business.Ultilities;
+using DataAccess.Models.EmailModel;
 
 namespace BussinessObject.Services.UserServices
 {
@@ -32,11 +33,11 @@ namespace BussinessObject.Services.UserServices
             try
             {
                 var User = await _userRepository.GetUserByEmail(LoginForm.Email);
-                if (User == null)
+                if (User == null || User.Status == UserStatus.INACTIVE)
                 {
                     Result.IsSuccess = false;
                     Result.Code = 400;
-                    Result.Message = "Not found";
+                    Result.Message = "Please verify your account";
                     return Result;
                 }
                 else
@@ -92,30 +93,33 @@ namespace BussinessObject.Services.UserServices
                 {
                     Result.IsSuccess = false;
                     Result.Code = 400;
-                    Result.Message = "Email is existed!";
+                    Result.Message = "Email is already registered!";
                 }
                 else
                 {
-
-                    string verificationToken = GenerateVerificationToken();
-
-
+                    string OTP = GenerateOTP();
+                    DateTime expirationTime = DateTime.Now.AddMinutes(10);
                     var config = new MapperConfiguration(cfg =>
                     {
-                        cfg.CreateMap<UserReqModel, User>().ForMember(dest => dest.Password, opt => opt.Ignore()); ;
+                        cfg.CreateMap<UserReqModel, User>().ForMember(dest => dest.Password, opt => opt.Ignore());
                     });
                     IMapper mapper = config.CreateMapper();
                     User NewUser = mapper.Map<UserReqModel, User>(RegisterForm);
 
+                    string FilePath = "../BussinessObject/TemplateEmail/FirstInformation.html";
 
-                  /*  string FilePath = "../BusinessObject/TemplateEmail/FirstInformation.html";
+
+                   string FilePath = "../BusinessObject/TemplateEmail/FirstInformation.html";
+
+             
+
                     string Html = File.ReadAllText(FilePath);
-                    Html = Html.Replace("{{Password}}", RegisterForm.Password);
                     Html = Html.Replace("{{Email}}", RegisterForm.Email);
-                    bool check = await EmailUltilities.SendEmail(RegisterForm.Email, "Login Information", Html);*/
+
+                    bool check = await EmailUltilities.SendEmail(RegisterForm.Email, "Login Information", Html);
                     var HashedPasswordModel = Encoder.CreateHashPassword(RegisterForm.Password);
 
-                   // NewUser.VerificationToken = verificationToken;
+                    NewUser.VerificationToken = verificationToken;
                     NewUser.Id = Guid.NewGuid();
                     NewUser.Password = HashedPasswordModel.HashedPassword;
                     NewUser.Salt = HashedPasswordModel.Salt;
@@ -127,7 +131,33 @@ namespace BussinessObject.Services.UserServices
                     Result.Code = 200;
                     Result.Message = "Create account successfully!";
                 }
+                    Html = Html.Replace("{{OTP}}", $"{OTP}");
 
+                    bool emailSent = await EmailUltilities.SendEmail(RegisterForm.Email, "Email Verification", Html);
+
+                    if (emailSent)
+                    {
+                        NewUser.Otp = OTP;
+                        NewUser.Otpexpiration = expirationTime;
+                        NewUser.Id = Guid.NewGuid();
+                        NewUser.Status = UserStatus.INACTIVE; 
+                        NewUser.CreatedAt = DateTime.Now;
+                        NewUser.Role = UserEnum.OWNER;
+
+                        _ = await _userRepository.Insert(NewUser);
+
+                        Result.IsSuccess = true;
+                        Result.Code = 200;
+                        Result.Message = "Verification email sent successfully!";
+                    }
+                    else
+                    {
+                        // Handle email sending failure
+                        Result.IsSuccess = false;
+                        Result.Code = 500;
+                        Result.Message = "Failed to send verification email. Please try again later.";
+                    }
+                }
             }
             catch (Exception e)
             {
@@ -138,11 +168,11 @@ namespace BussinessObject.Services.UserServices
             return Result;
         }
 
-        private string GenerateVerificationToken()
+        private string GenerateOTP()
         {
-            // Generate a unique token, you can use any method you prefer
-            // For simplicity, you can use GUID
-            return Guid.NewGuid().ToString();
+            Random rnd = new Random();
+            int otp = rnd.Next(100000, 999999); 
+            return otp.ToString();
         }
 
         public async Task<ResultModel> GetUserProfile(Guid userId)
@@ -309,6 +339,55 @@ namespace BussinessObject.Services.UserServices
             return Result;
         }
 
+        public async Task<ResultModel> VerifyEmail(EmailVerificationReqModel verificationModel)
+        {
+            try
+            {
+                var user = await _userRepository.GetUserByVerificationToken(verificationModel.OTP);
+                if (user != null && user.VerificationTokenExpiration > DateTime.Now)
+                {
+                    
+                    user.Status = UserStatus.ACTIVE;
+                    await _userRepository.Update(user);
+
+                    return new ResultModel
+                    {
+                        IsSuccess = true,
+                        Code = 200,
+                        Message = "Email verification successful."
+                    };
+                }
+                else if (user.VerificationTokenExpiration < DateTime.Now)
+                {
+                  
+                    return new ResultModel
+                    {
+                        IsSuccess = false,
+                        Code = 400,
+                        Message = "Expired verification otp.(10 minutes)"
+                    };
+                }
+                else
+                {
+                    return new ResultModel
+                    {
+                        IsSuccess = false,
+                        Code = 400,
+                        Message = "Wrong verification otp."
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                // Handle exception
+                return new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = 500,
+                    Message = "An error occurred while processing your request."
+                };
+            }
+        }
 
     }
 }
