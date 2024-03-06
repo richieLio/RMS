@@ -13,6 +13,7 @@ using EmailUltilities = Business.Ultilities.Email;
 using System.Threading.Tasks;
 using DataAccess.Enums;
 using Business.Ultilities;
+using DataAccess.Models.EmailModel;
 
 namespace BussinessObject.Services.UserServices
 {
@@ -32,7 +33,7 @@ namespace BussinessObject.Services.UserServices
             try
             {
                 var User = await _userRepository.GetUserByEmail(LoginForm.Email);
-                if (User == null)
+                if (User == null || User.Status == UserStatus.INACTIVE)
                 {
                     Result.IsSuccess = false;
                     Result.Code = 400;
@@ -110,7 +111,7 @@ namespace BussinessObject.Services.UserServices
              
                     string Html = File.ReadAllText(FilePath);
                     Html = Html.Replace("{{Email}}", RegisterForm.Email);
-                    Html = Html.Replace("{{VerificationLink}}", $"https://localhost:7084/verify?token={verificationToken}");
+                    Html = Html.Replace("{{VerificationLink}}", $"https://localhost:7084/verify?token{verificationToken}");
 
                     bool emailSent = await EmailUltilities.SendEmail(RegisterForm.Email, "Email Verification", Html);
 
@@ -318,6 +319,46 @@ namespace BussinessObject.Services.UserServices
             return Result;
         }
 
+        public async Task<ResultModel> VerifyEmail(EmailVerificationReqModel verificationModel)
+        {
+            try
+            {
+                var user = await _userRepository.GetUserByVerificationToken(verificationModel.Token);
+                if (user != null && user.VerificationTokenExpiration > DateTime.Now)
+                {
+                    
+                    user.Status = UserStatus.ACTIVE;
+                    await _userRepository.Update(user);
+
+                    return new ResultModel
+                    {
+                        IsSuccess = true,
+                        Code = 200,
+                        Message = "Email verification successful."
+                    };
+                }
+                else
+                {
+                    // Token is invalid or expired
+                    return new ResultModel
+                    {
+                        IsSuccess = false,
+                        Code = 400,
+                        Message = "Invalid or expired verification token."
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                // Handle exception
+                return new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = 500,
+                    Message = "An error occurred while processing your request."
+                };
+            }
+        }
 
     }
 }
