@@ -81,6 +81,22 @@ namespace API.Controllers
             ResultModel result = await _houseServices.GetHouseById(userId, houseId);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
+
+        [HttpPut("update-status")]
+        public async Task<IActionResult> UpdateHouseStatus([FromBody] HouseUpdateStatusReqModel Form)
+        {
+            var userIdString = User.FindFirst("userid")?.Value;
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                return BadRequest("Unable to retrieve user ID");
+            }
+            if (!Guid.TryParse(userIdString, out Guid userId))
+            {
+                return BadRequest("Invalid user ID format");
+            }
+            ResultModel result = await _houseServices.UpdateHouseStatus(userId, Form);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
     }
 }
 

@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace DataAccess.Models.HouseModel
 {
-    public class HouseListResModel
+    public class HouseInfoResModel
     {
         public Guid Id { get; set; }
 
-        public OwnerHouseModel OwnerId { get; set; }
+        public OwnerHouseInfo OwnerId { get; set; }
 
         public string? Name { get; set; }
 
@@ -22,9 +22,11 @@ namespace DataAccess.Models.HouseModel
         public int? RoomQuantity { get; set; }
 
         public int? AvailableRoom { get; set; }
+
+        public string? Status { get; set; }
     }
 
-    public class OwnerHouseModel
+    public class OwnerHouseInfo
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
