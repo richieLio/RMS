@@ -117,8 +117,8 @@ namespace BussinessObject.Services.UserServices
 
                     if (emailSent)
                     {
-                        NewUser.VerificationToken = OTP;
-                        NewUser.VerificationTokenExpiration = expirationTime;
+                        NewUser.Otp = OTP;
+                        NewUser.Otpexpiration = expirationTime;
                         NewUser.Id = Guid.NewGuid();
                         NewUser.Status = UserStatus.INACTIVE; 
                         NewUser.CreatedAt = DateTime.Now;
