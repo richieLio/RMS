@@ -14,7 +14,7 @@ namespace BussinessObject.Services.HouseServices
         public Task<ResultModel> GetHousesByUserId(Guid UserId, int page);
         public Task<ResultModel> AddHouse(Guid ownerId ,HouseCreateReqModel houseCreateReqModel);
         public Task<ResultModel> UpdateHouse(Guid ownerId, HouseUpdateReqModel houseUpdateReqModel);
+        public Task<ResultModel> UpdateHouseStatus(Guid ownerId, HouseUpdateStatusReqModel houseUpdateStatusReqModel);
         public Task<ResultModel> GetHouseById(Guid userId, Guid houseId);
-
     }
 }

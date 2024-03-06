@@ -6,12 +6,9 @@ using System.Threading.Tasks;
 
 namespace DataAccess.Models.HouseModel
 {
-    public class HouseListResModel
+    public class HouseUpdateReqModel
     {
         public Guid Id { get; set; }
-
-        public OwnerHouseModel OwnerId { get; set; }
-
         public string? Name { get; set; }
 
         public string? Address { get; set; }
@@ -24,9 +21,9 @@ namespace DataAccess.Models.HouseModel
         public int? AvailableRoom { get; set; }
     }
 
-    public class OwnerHouseModel
+    public class HouseUpdateStatusReqModel
     {
         public Guid Id { get; set; }
-        public string Name { get; set; }
+        public string? Status { get; set; }
     }
 }
