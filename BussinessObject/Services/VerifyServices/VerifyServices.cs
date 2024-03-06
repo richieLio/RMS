@@ -56,7 +56,7 @@ namespace BussinessObject.Services.VerifyServices
                 }
 
                 string OTPCode = CreateOTPCode();
-                string FilePath = "../DataAccess/TemplateEmail/ResetPassword.html";
+                string FilePath = "../BussinessObject/TemplateEmail/ResetPassword.html";
                 string Html = File.ReadAllText(FilePath);
                 Html = Html.Replace("{{OTPCode}}", OTPCode);
                 Html = Html.Replace("{{toEmail}}", Email);
