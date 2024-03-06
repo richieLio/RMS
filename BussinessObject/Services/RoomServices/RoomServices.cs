@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
+using BussinessObject.Ultilities;
 using Data.Enums;
 using DataAccess.Entities;
 using DataAccess.Enums;
 using DataAccess.Models.CustomerModel;
 using DataAccess.Models.HouseModel;
 using DataAccess.Models.RoomModel;
+using DataAccess.Models.UserModel;
 using DataAccess.Repositories.ContractRepository;
 using DataAccess.Repositories.HouseRepository;
 using DataAccess.Repositories.RoomRepository;
@@ -201,6 +203,159 @@ namespace BussinessObject.Services.RoomServices
                 result.IsSuccess = false;
                 result.Code = 400;
                 result.ResponseFailed = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+            }
+            return result;
+        }
+
+        public async Task<ResultModel> GetRoomList(int page)
+        {
+            ResultModel result = new ResultModel();
+            try
+            {
+                if (page == null || page == 0)
+                {
+                    page = 1;
+                }
+
+                var rooms = await _roomRepository.GetRooms();
+                List<RoomResModel> roomList = new();
+                foreach (var r in rooms)
+                {
+
+                    RoomResModel rl = new()
+                    {
+                        Id = r.Id,
+                        Name = r.Name,
+                        HouseId = r.HouseId,
+                        Status = r.Status
+                    };
+                    roomList.Add(rl);
+
+                }
+                var ResultList = await Pagination.GetPagination(roomList, page, 10);
+
+                result.IsSuccess = true;
+                result.Code = 200;
+                result.Data = ResultList;
+            }
+            catch (Exception e)
+            {
+                result.IsSuccess = false;
+                result.Code = 400;
+                result.ResponseFailed = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+            }
+            return result;
+        }
+
+        public async Task<ResultModel> GetRoomInformation(Guid roomId)
+        {
+            ResultModel result = new ResultModel();
+            try
+            {
+                var Room = await _roomRepository.GetRoomById(roomId);
+                var House = await _houseRepository.GetHouseById(Room.HouseId);
+
+                var OwnerHouseDetails = await _userRepository.GetUserByID(House.OwnerId);
+
+                if (Room == null)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 400;
+                    result.Message = "Room not found";
+                    return result;
+                }
+
+                OwnerHouseDetailsModel OwnerHouseBy = new()
+                {
+                    Id = OwnerHouseDetails.Id,
+                    Name = OwnerHouseDetails.FullName
+                };
+
+                HouseDetails houseDetails = new()
+                {
+                    Id = House.Id,
+                    Owner = OwnerHouseBy,
+                    Name = House.Name,
+                    Address = House.Address,
+                    RoomQuantity = House.RoomQuantity,
+                    AvailableRoom = House.AvailableRoom,
+                    HouseAccount = House.HouseAccount,
+                    Status = House.Status,
+                };
+
+                var roomInformation = new RoomInfoResModel
+                {
+                    Id = Room.Id,
+                    Name = Room.Name,
+                    houseDetails = houseDetails,
+                    Status = House.Status,
+                };
+
+                result.IsSuccess = true;
+                result.Code = 200;
+                result.Data = roomInformation;
+            }
+            catch (Exception e)
+            {
+                result.IsSuccess = false;
+                result.Code = 400;
+                result.ResponseFailed = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+            }
+            return result;
+        }
+
+        public async Task<ResultModel> UpdateRoom(RoomUpdateReqModel roomUpdateReqModel)
+        {
+            ResultModel result = new();
+            try
+            {
+                var Room = await _roomRepository.GetRoomById(roomUpdateReqModel.Id);
+                if (Room == null)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 400;
+                    result.Message = "Not found";
+                    return result;
+                }
+                Room.Name = roomUpdateReqModel.Name;
+                _ = await _roomRepository.Update(Room);
+                result.IsSuccess = true;
+                result.Code = 200;
+                result.Message = "Room updated successfully";
+            }
+            catch (Exception ex)
+            {
+                result.IsSuccess = false;
+                result.Code = 400;
+                result.Message = ex.Message;
+            }
+            return result;
+        }
+
+        public async Task<ResultModel> UpdateRoomStatus(RoomUpdateStatusReqModel roomUpdateStatusReqModel)
+        {
+            ResultModel result = new();
+            try
+            {
+                var Room = await _roomRepository.GetRoomById(roomUpdateStatusReqModel.Id);
+                if (Room == null)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 400;
+                    result.Message = "Room Not found";
+                    return result;
+                }
+                Room.Status = roomUpdateStatusReqModel.Status;
+                _ = await _roomRepository.Update(Room);
+                result.IsSuccess = true;
+                result.Code = 200;
+                result.Message = "Room updated status successfully";
+            }
+            catch (Exception ex)
+            {
+                result.IsSuccess = false;
+                result.Code = 400;
+                result.Message = ex.Message;
             }
             return result;
         }

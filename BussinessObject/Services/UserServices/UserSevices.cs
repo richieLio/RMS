@@ -108,11 +108,11 @@ namespace BussinessObject.Services.UserServices
                     User NewUser = mapper.Map<UserReqModel, User>(RegisterForm);
 
 
-                    string FilePath = "../BusinessObject/TemplateEmail/FirstInformation.html";
+                  /*  string FilePath = "../BusinessObject/TemplateEmail/FirstInformation.html";
                     string Html = File.ReadAllText(FilePath);
                     Html = Html.Replace("{{Password}}", RegisterForm.Password);
                     Html = Html.Replace("{{Email}}", RegisterForm.Email);
-                    bool check = await EmailUltilities.SendEmail(RegisterForm.Email, "Login Information", Html);
+                    bool check = await EmailUltilities.SendEmail(RegisterForm.Email, "Login Information", Html);*/
                     var HashedPasswordModel = Encoder.CreateHashPassword(RegisterForm.Password);
 
                    // NewUser.VerificationToken = verificationToken;
