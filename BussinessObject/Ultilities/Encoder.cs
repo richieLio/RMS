@@ -56,6 +56,17 @@ namespace Business.Ultilities
                 HashedPassword = HashedPassword
             };
         }
+        public static CreateHashPasswordModel CreateHash2ndPassword(string Password)
+        {
+            byte[] PasswordByte = Encoding.UTF8.GetBytes(Password);
+            byte[] HashedPassword = HashingPassword(PasswordByte);
+            return new CreateHashPasswordModel()
+            {
+                Salt = null, // No salt is used
+                HashedPassword = HashedPassword
+            };
+        }
+
 
         public static bool VerifyPasswordHashed(string Password, byte[] Salt, byte[] PasswordStored)
         {
@@ -64,7 +75,8 @@ namespace Business.Ultilities
             byte[] NewHash = HashingPassword(CombinedBytes);
             return PasswordStored.SequenceEqual(NewHash);
         }
-        public static bool VerifyPasswordHashedNoSalt(string Password, byte[] PasswordStored)
+
+        public static bool Verify2ndPasswordHashed(string Password, byte[] PasswordStored)
         {
             byte[] PasswordByte = Encoding.UTF8.GetBytes(Password);
             byte[] NewHash = HashingPassword(PasswordByte);
@@ -114,7 +126,7 @@ namespace Business.Ultilities
             var SecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Key));
             var Credential = new SigningCredentials(SecurityKey, SecurityAlgorithms.HmacSha256);
             List<Claim> Claims = new()
-            {  
+            {
                 new Claim("houseid", house.Id.ToString()),
                 new Claim("houseaccount", house.HouseAccount),
             };

@@ -35,7 +35,6 @@ namespace BussinessObject.Services.CustomerServices
 
         public async Task<ResultModel> CreateSecondPass(string token, CustomerCreate2ndPassReqModel customerCreate2NdPassReqModel)
         {
-
             ResultModel Result = new();
             try
             {
@@ -53,11 +52,18 @@ namespace BussinessObject.Services.CustomerServices
                 {
                     var roomPass = await _roomRepository.Get(customerCreate2NdPassReqModel.RoomId);
 
-                    var HashedPasswordModel = Encoder.CreateHashPassword(customerCreate2NdPassReqModel.SecondPassword);
+                    // Validate if the second password consists of exactly 6 digits
+                    if (!IsSixDigitNumeric(customerCreate2NdPassReqModel.SecondPassword))
+                    {
+                        Result.IsSuccess = false;
+                        Result.Code = 400;
+                        Result.Message = "Second password must be a 6-digit numeric value.";
+                        return Result;
+                    }
 
+                    var HashedPasswordModel = Encoder.CreateHash2ndPassword(customerCreate2NdPassReqModel.SecondPassword);
 
                     roomPass.SecondPassword = HashedPasswordModel.HashedPassword;
-
 
                     _ = await _roomRepository.Update(roomPass);
                     Result.IsSuccess = true;
@@ -74,6 +80,22 @@ namespace BussinessObject.Services.CustomerServices
             }
             return Result;
         }
+
+        // Helper method to check if a string is a 6-digit numeric value
+        private bool IsSixDigitNumeric(string value)
+        {
+            if (string.IsNullOrEmpty(value) || value.Length != 6)
+                return false;
+
+            foreach (char c in value)
+            {
+                if (!char.IsDigit(c))
+                    return false;
+            }
+
+            return true;
+        }
+
 
         public async Task<ResultModel> Login(CustomerLoginReqModel LoginForm)
         {
@@ -139,6 +161,7 @@ namespace BussinessObject.Services.CustomerServices
                 var house = await _houseRepository.Get(houseId);
 
                 var room = await _roomRepository.Get(secondPassVerificationModel.RoomId);
+
                 if (house == null || room == null)
                 {
                     Result.IsSuccess = false;
@@ -150,7 +173,8 @@ namespace BussinessObject.Services.CustomerServices
 
                   
                     var PasswordStored = room.SecondPassword;
-                    var Verify = Encoder.VerifyPasswordHashedNoSalt(secondPassVerificationModel.SecondPassword, PasswordStored);
+
+                    var Verify = Encoder.Verify2ndPasswordHashed(secondPassVerificationModel.SecondPassword, PasswordStored);
                     if (Verify)
                     {
                         var config = new MapperConfiguration(cfg =>
@@ -161,7 +185,7 @@ namespace BussinessObject.Services.CustomerServices
                         IMapper mapper = config.CreateMapper();
                         RoomResModel roomResModel = mapper.Map<RoomResModel>(room);
 
-                        // Additional processing if needed
+                       
 
                         Result.IsSuccess = true;
                         Result.Code = 200;
