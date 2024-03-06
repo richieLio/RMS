@@ -20,7 +20,6 @@ namespace API.Controllers
             _user = user;
         }
 
-
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] UserLoginReqModel LoginForm)
         {
@@ -28,14 +27,12 @@ namespace API.Controllers
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 
-
         [HttpPost("register-user")]
         public async Task<IActionResult> CreateUser([FromBody] UserReqModel Form)
         {
             ResultModel result = await _user.CreateAccount(Form);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
-
 
         [HttpGet("profile")]
         public async Task<IActionResult> GetUserProfile()
@@ -52,7 +49,6 @@ namespace API.Controllers
             var result = await _user.GetUserProfile(userId);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
-
 
         [HttpPut("update-profile")]
         public async Task<IActionResult> UpdateUserProfile([FromBody] UserUpdateModel updateModel)

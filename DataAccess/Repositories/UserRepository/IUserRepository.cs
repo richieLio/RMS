@@ -12,7 +12,7 @@ namespace DataAccess.Repositories.UserRepository
     {
         public Task<User> GetUserByEmail(string Email);
 
-        public Task<User> GetUserByID(Guid userId);
+        public Task<User> GetUserByID(Guid? userId);
 
         public Task<User> CheckIfCustomerIsExisted(string Email, string phoneNumber, string CitizenIdNumber, string LicensePlates);
 

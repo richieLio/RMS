@@ -18,7 +18,6 @@ namespace API.Controllers
             _billServices = billServices;
         }
 
-
         [HttpPost("add-new")]
         public async Task<IActionResult> CreateHouse([FromBody] BillCreateReqModel Form)
         {
