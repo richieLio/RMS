@@ -31,9 +31,9 @@ namespace DataAccess.Repositories.UserRepository
             return await _context.Users.Where(x => x.Email.Equals(Email)).FirstOrDefaultAsync();
         }
 
-        public async Task<User> GetUserByID(Guid userId)
+        public async Task<User> GetUserByID(Guid? userId)
         {
-            return await _context.Users.FindAsync(userId);
+            return await _context.Users.Where(x => x.Id.Equals(userId)).FirstOrDefaultAsync();
         }
 
         public async Task<User> GetUserByVerificationToken(string otp)

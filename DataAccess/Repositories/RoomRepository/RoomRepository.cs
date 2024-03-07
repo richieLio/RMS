@@ -1,4 +1,5 @@
-﻿using DataAccess.Entities;
+﻿using Data.Enums;
+using DataAccess.Entities;
 using DataAccess.Repositories.GenericRepository;
 using DataAccess.Repositories.HouseRepository;
 using Microsoft.EntityFrameworkCore;
@@ -13,9 +14,11 @@ namespace DataAccess.Repositories.RoomRepository
     public class RoomRepository : Repository<Room>, IRoomRepository
     {
         private readonly HouseManagementContext _context;
+        private readonly DbSet<Room> _rooms;
         public RoomRepository(HouseManagementContext context) : base(context)
         {
             _context = context;
+            _rooms = context.Set<Room>();
         }
 
         public async Task<bool> AddUserToRoom(Guid userId, Guid roomId)
@@ -43,5 +46,20 @@ namespace DataAccess.Repositories.RoomRepository
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<Room>> GetRooms()
+        {
+            return await _rooms.Where(x => x.Status.Equals(RoomStatus.ACTIVE)).ToListAsync();
+        }
+
+        public async Task<Room?> GetRoomById(Guid roomId)
+        {
+            return await _rooms
+                .FirstOrDefaultAsync(r => r.Id == roomId);
+        }
+
+        public async Task<Room> GetRoomById(Guid? roomId)
+        {
+            return await _context.Rooms.FindAsync(roomId);
+        }
     }
 }

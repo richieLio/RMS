@@ -13,7 +13,7 @@ namespace Data.Enums
         public static readonly string INACTIVE = "Inactive";
     }
 
-    public class ClassStatus
+    public class RoomStatus
     {
         public static readonly string ACTIVE = "Active";
         public static readonly string INACTIVE = "Inactive";

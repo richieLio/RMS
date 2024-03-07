@@ -111,7 +111,7 @@ namespace BussinessObject.Services.UserServices
                     }
                     string FilePath = "../BussinessObject/TemplateEmail/FirstInformation.html";
 
-             
+
                     string Html = File.ReadAllText(FilePath);
                     Html = Html.Replace("{{Email}}", RegisterForm.Email);
                     Html = Html.Replace("{{OTP}}", $"{OTP}");
@@ -123,7 +123,7 @@ namespace BussinessObject.Services.UserServices
                         NewUser.Otp = OTP;
                         NewUser.Otpexpiration = expirationTime;
                         NewUser.Id = Guid.NewGuid();
-                        NewUser.Status = UserStatus.INACTIVE; 
+                        NewUser.Status = UserStatus.INACTIVE;
                         NewUser.CreatedAt = DateTime.Now;
                         NewUser.Role = UserEnum.OWNER;
                         var HashedPasswordModel = Encoder.CreateHashPassword(RegisterForm.Password);
@@ -157,7 +157,7 @@ namespace BussinessObject.Services.UserServices
         private string GenerateOTP()
         {
             Random rnd = new Random();
-            int otp = rnd.Next(100000, 999999); 
+            int otp = rnd.Next(100000, 999999);
             return otp.ToString();
         }
 
@@ -332,7 +332,7 @@ namespace BussinessObject.Services.UserServices
                 var user = await _userRepository.GetUserByVerificationToken(verificationModel.OTP);
                 if (user != null && user.Otpexpiration > DateTime.Now)
                 {
-                    
+
                     user.Status = UserStatus.ACTIVE;
                     await _userRepository.Update(user);
 
@@ -345,7 +345,7 @@ namespace BussinessObject.Services.UserServices
                 }
                 else if (user.Otpexpiration < DateTime.Now)
                 {
-                  
+
                     return new ResultModel
                     {
                         IsSuccess = false,

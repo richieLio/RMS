@@ -84,6 +84,7 @@ namespace BussinessObject.Services.HouseServices
             try
             {
                 var house = await _houseRepository.Get(houseId);
+
                 if (house == null)
                 {
                     result.IsSuccess = false;
@@ -91,12 +92,29 @@ namespace BussinessObject.Services.HouseServices
                     result.Message = "House not found";
                     return result;
                 }
-                else
+
+                var Owner = await _userRepository.GetUserByID(house.OwnerId);
+                OwnerHouseInfo OwnerBy = new()
                 {
-                    result.IsSuccess = true;
-                    result.Code = 200;
-                    result.Data = house;
+                    Id = Owner.Id,
+                    Name = Owner.FullName,
+                };
+
+                var houseInfomation = new HouseInfoResModel();
+                {
+                    houseInfomation.Id = house.Id;
+                    houseInfomation.OwnerId = OwnerBy;
+                    houseInfomation.Name = house.Name;
+                    houseInfomation.Address = house.Address;
+                    houseInfomation.RoomQuantity = house.RoomQuantity;
+                    houseInfomation.AvailableRoom = house.AvailableRoom;
+                    houseInfomation.Status = house.Status;
                 }
+
+                result.IsSuccess = true;
+                result.Code = 200;
+                result.Data = houseInfomation;
+
 
             }
             catch (Exception e)
@@ -124,10 +142,16 @@ namespace BussinessObject.Services.HouseServices
 
                 foreach (var house in houses)
                 {
+                    var Owner = await _userRepository.GetUserByID(house.OwnerId);
+                    OwnerHouseModel OwnerBy = new()
+                    {
+                        Id = Owner.Id,
+                        Name = Owner.FullName,
+                    };
                     HouseListResModel houseListResModel = new()
                     {
                         Id = house.Id,
-                        OwnerId = house.OwnerId,
+                        OwnerId = OwnerBy,
                         Name = house.Name,
                         Address = house.Address,
                         RoomQuantity = house.RoomQuantity,
@@ -152,7 +176,7 @@ namespace BussinessObject.Services.HouseServices
             ResultModel result = new();
             try
             {
-                var owner = _userRepository.GetUserByID(OwnerId);
+                var owner = await _userRepository.GetUserByID(OwnerId);
                 if (owner == null)
                 {
                     result.IsSuccess = false;
@@ -187,6 +211,42 @@ namespace BussinessObject.Services.HouseServices
             return result;
         }
 
+        public async Task<ResultModel> UpdateHouseStatus(Guid ownerId, HouseUpdateStatusReqModel houseUpdateStatusReqModel)
+        {
+            ResultModel result = new();
+            try
+            {
+                var owner = await _userRepository.GetUserByID(ownerId);
+                if (owner == null)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 400;
+                    result.Message = "Not found";
+                    return result;
+                }
+                var house = await _houseRepository.GetHouseById(houseUpdateStatusReqModel.Id);
+                if (house == null)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 400;
+                    result.Message = "Not found";
+                    return result;
+                }
+                house.Id = houseUpdateStatusReqModel.Id;
+                house.Status = houseUpdateStatusReqModel.Status;
+                _ = await _houseRepository.Update(house);
+                result.IsSuccess = true;
+                result.Code = 200;
+                result.Message = "House updated status successfully";
+            }
+            catch (Exception ex)
+            {
+                result.IsSuccess = false;
+                result.Code = 400;
+                result.Message = ex.Message;
+            }
+            return result;
 
+        }
     }
 }
