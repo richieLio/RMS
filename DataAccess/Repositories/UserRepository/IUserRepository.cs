@@ -16,7 +16,7 @@ namespace DataAccess.Repositories.UserRepository
 
         public Task<User> CheckIfCustomerIsExisted(string Email, string phoneNumber, string CitizenIdNumber, string LicensePlates);
 
-        Task<User> GetUserByVerificationToken(string verificationToken);
+        Task<User> GetUserByVerificationToken(string otp);
 
     }
 }

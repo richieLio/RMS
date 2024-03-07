@@ -36,10 +36,10 @@ namespace DataAccess.Repositories.UserRepository
             return await _context.Users.FindAsync(userId);
         }
 
-        public async Task<User> GetUserByVerificationToken(string verificationToken)
+        public async Task<User> GetUserByVerificationToken(string otp)
         {
             // Assuming User entity has a property named VerificationToken
-            return await _context.Users.FirstOrDefaultAsync(u => u.VerificationToken == verificationToken);
+            return await _context.Users.FirstOrDefaultAsync(u => u.Otp == otp);
         }
     }
 }
