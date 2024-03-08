@@ -176,10 +176,10 @@ namespace BussinessObject.Services.RoomServices
                     PhoneNumber = c.PhoneNumber,
                     Address = c.Address,
                     Gender  = c.Gender,
-                    Dob = c.Dob,
+                    Dob = c.Dob.HasValue == true ? c.Dob.Value.ToString("dd/MM/yyyy") : null,
                     FullName = c.FullName,
                     LicensePlates = c.LicensePlates,
-                    CreatedAt = c.CreatedAt,
+                    CreatedAt = c.CreatedAt.HasValue == true ? c.CreatedAt.Value.ToString("dd/MM/yyy") : null,
                     CitizenIdNumber = c.CitizenIdNumber,
                     // Map other properties accordingly
                 }).ToList();

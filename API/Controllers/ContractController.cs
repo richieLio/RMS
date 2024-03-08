@@ -22,5 +22,12 @@ namespace API.Controllers
             ResultModel result = await _contractServices.GetContractList(page);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
+
+        [HttpGet("information")]
+        public async Task<IActionResult> GetRoomInformation(Guid contractId)
+        {
+            ResultModel result = await _contractServices.GetContractInformation(contractId);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
     }
 }

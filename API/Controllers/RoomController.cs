@@ -66,7 +66,7 @@ namespace API.Controllers
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 
-        [HttpGet("roomId/information")]
+        [HttpGet("information")]
         public async Task<IActionResult> GetRoomInformation(Guid roomId)
         {
             ResultModel result = await _roomServices.GetRoomInformation(roomId);
