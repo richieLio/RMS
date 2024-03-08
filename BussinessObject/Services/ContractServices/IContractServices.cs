@@ -10,5 +10,6 @@ namespace BussinessObject.Services.ContractServices
     public interface IContractServices
     {
         Task<ResultModel> GetContractList(int page);
+        Task<ResultModel> GetContractInformation(Guid contractId);
     }
 }
