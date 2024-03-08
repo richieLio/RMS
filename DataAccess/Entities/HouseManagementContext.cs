@@ -82,6 +82,7 @@ public partial class HouseManagementContext : DbContext
                 .HasMaxLength(250)
                 .HasColumnName("ImagesURL");
             entity.Property(e => e.StartDate).HasMaxLength(6);
+            entity.Property(e => e.Status).HasMaxLength(50);
 
             entity.HasOne(d => d.Customer).WithMany(p => p.ContractCustomers)
                 .HasForeignKey(d => d.CustomerId)

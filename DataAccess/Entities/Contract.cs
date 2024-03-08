@@ -21,6 +21,8 @@ public partial class Contract
 
     public string? FileUrl { get; set; }
 
+    public string? Status { get; set; }
+
     public virtual User? Customer { get; set; }
 
     public virtual User? Owner { get; set; }
