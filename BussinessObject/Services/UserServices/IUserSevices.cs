@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DataAccess.Entities;
+using DataAccess.Models.EmailModel;
 
 namespace BussinessObject.Services.UserServices
 {
@@ -18,5 +19,7 @@ namespace BussinessObject.Services.UserServices
         Task<ResultModel> UpdateUserProfile(UserUpdateModel updateModel);
         Task<ResultModel> ChangePassword(Guid userId, ChangePasswordReqModel changePasswordModel);
         public Task<ResultModel> ResetPassword(UserResetPasswordReqModel ResetPasswordReqModel);
+        Task<ResultModel> VerifyEmail(EmailVerificationReqModel verificationModel);
+
     }
 }

@@ -40,7 +40,9 @@ public partial class User
 
     public string? CitizenIdNumber { get; set; }
 
-    public string? VerificationToken { get; set; }
+    public string? Otp { get; set; }
+
+    public DateTime? Otpexpiration { get; set; }
 
     public virtual ICollection<Bill> Bills { get; set; } = new List<Bill>();
 

@@ -17,13 +17,13 @@ namespace DataAccess.Models.CustomerModel
         public string? Address { get; set; }
 
         public string? Gender { get; set; }
-        public DateTime? Dob { get; set; }
+        public string? Dob { get; set; }
 
         public string? FullName { get; set; }
         /// Biển số xe
         public string? LicensePlates { get; set; }
 
-        public DateTime? CreatedAt { get; set; }
+        public string? CreatedAt { get; set; }
 
         public string? CitizenIdNumber { get; set; }
 

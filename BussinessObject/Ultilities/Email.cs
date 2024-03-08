@@ -22,7 +22,7 @@ namespace Business.Ultilities
                 string pass = "owda kwow ujga pfjm";
                 MimeMessage message = new();
                 message.From.Add(MailboxAddress.Parse(from));
-                message.Subject = "[FAMS] " + Subject;
+                message.Subject = "[RMS] " + Subject;
                 message.To.Add(MailboxAddress.Parse(toEmail));
                 message.Body = new TextPart(MimeKit.Text.TextFormat.Html)
                 {

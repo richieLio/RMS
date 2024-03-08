@@ -82,6 +82,7 @@ public partial class HouseManagementContext : DbContext
                 .HasMaxLength(250)
                 .HasColumnName("ImagesURL");
             entity.Property(e => e.StartDate).HasMaxLength(6);
+            entity.Property(e => e.Status).HasMaxLength(50);
 
             entity.HasOne(d => d.Customer).WithMany(p => p.ContractCustomers)
                 .HasForeignKey(d => d.CustomerId)
@@ -205,12 +206,17 @@ public partial class HouseManagementContext : DbContext
             entity.Property(e => e.LicensePlates)
                 .HasMaxLength(50)
                 .HasComment("Biển số xe");
+            entity.Property(e => e.Otp)
+                .HasMaxLength(255)
+                .HasColumnName("OTP");
+            entity.Property(e => e.Otpexpiration)
+                .HasColumnType("datetime")
+                .HasColumnName("OTPExpiration");
             entity.Property(e => e.Password).HasMaxLength(512);
             entity.Property(e => e.PhoneNumber).HasMaxLength(50);
             entity.Property(e => e.Role).HasMaxLength(50);
             entity.Property(e => e.Salt).HasMaxLength(512);
             entity.Property(e => e.Status).HasMaxLength(50);
-            entity.Property(e => e.VerificationToken).HasMaxLength(0);
 
             entity.HasMany(d => d.Rooms).WithMany(p => p.Users)
                 .UsingEntity<Dictionary<string, object>>(
