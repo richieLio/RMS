@@ -105,32 +105,15 @@ namespace BussinessObject.Services.UserServices
                     });
                     IMapper mapper = config.CreateMapper();
                     User NewUser = mapper.Map<UserReqModel, User>(RegisterForm);
-
+                    if (RegisterForm.Password == null)
+                    {
+                        RegisterForm.Password = Encoder.GenerateRandomPassword();
+                    }
                     string FilePath = "../BussinessObject/TemplateEmail/FirstInformation.html";
 
 
-                   string FilePath = "../BusinessObject/TemplateEmail/FirstInformation.html";
-
-             
-
                     string Html = File.ReadAllText(FilePath);
                     Html = Html.Replace("{{Email}}", RegisterForm.Email);
-
-                    bool check = await EmailUltilities.SendEmail(RegisterForm.Email, "Login Information", Html);
-                    var HashedPasswordModel = Encoder.CreateHashPassword(RegisterForm.Password);
-
-                    NewUser.VerificationToken = verificationToken;
-                    NewUser.Id = Guid.NewGuid();
-                    NewUser.Password = HashedPasswordModel.HashedPassword;
-                    NewUser.Salt = HashedPasswordModel.Salt;
-                    NewUser.Status = UserStatus.ACTIVE;
-                    NewUser.CreatedAt = DateTime.Now;
-                    NewUser.Role = UserEnum.OWNER;
-                    _ = await _userRepository.Insert(NewUser);
-                    Result.IsSuccess = true;
-                    Result.Code = 200;
-                    Result.Message = "Create account successfully!";
-                }
                     Html = Html.Replace("{{OTP}}", $"{OTP}");
 
                     bool emailSent = await EmailUltilities.SendEmail(RegisterForm.Email, "Email Verification", Html);
@@ -140,9 +123,12 @@ namespace BussinessObject.Services.UserServices
                         NewUser.Otp = OTP;
                         NewUser.Otpexpiration = expirationTime;
                         NewUser.Id = Guid.NewGuid();
-                        NewUser.Status = UserStatus.INACTIVE; 
+                        NewUser.Status = UserStatus.INACTIVE;
                         NewUser.CreatedAt = DateTime.Now;
                         NewUser.Role = UserEnum.OWNER;
+                        var HashedPasswordModel = Encoder.CreateHashPassword(RegisterForm.Password);
+                        NewUser.Password = HashedPasswordModel.HashedPassword;
+                        NewUser.Salt = HashedPasswordModel.Salt;
 
                         _ = await _userRepository.Insert(NewUser);
 
@@ -171,7 +157,7 @@ namespace BussinessObject.Services.UserServices
         private string GenerateOTP()
         {
             Random rnd = new Random();
-            int otp = rnd.Next(100000, 999999); 
+            int otp = rnd.Next(100000, 999999);
             return otp.ToString();
         }
 
@@ -344,9 +330,9 @@ namespace BussinessObject.Services.UserServices
             try
             {
                 var user = await _userRepository.GetUserByVerificationToken(verificationModel.OTP);
-                if (user != null && user.VerificationTokenExpiration > DateTime.Now)
+                if (user != null && user.Otpexpiration > DateTime.Now)
                 {
-                    
+
                     user.Status = UserStatus.ACTIVE;
                     await _userRepository.Update(user);
 
@@ -357,9 +343,9 @@ namespace BussinessObject.Services.UserServices
                         Message = "Email verification successful."
                     };
                 }
-                else if (user.VerificationTokenExpiration < DateTime.Now)
+                else if (user.Otpexpiration < DateTime.Now)
                 {
-                  
+
                     return new ResultModel
                     {
                         IsSuccess = false,
