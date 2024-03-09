@@ -23,7 +23,8 @@ namespace API.Controllers
         [HttpGet("list")]
         public async Task<IActionResult> GetHouses(int page)
         {
-            var userIdString = User.FindFirst("userid")?.Value;
+             var userIdString = User.FindFirst("userid")?.Value;
+           
             if (string.IsNullOrEmpty(userIdString))
             {
                 return BadRequest("Unable to retrieve user ID");
@@ -38,7 +39,8 @@ namespace API.Controllers
         [HttpPost("add-new")]
         public async Task<IActionResult> CreateHouse([FromBody] HouseCreateReqModel Form)
         {
-            var userIdString = User.FindFirst("userid")?.Value;
+             var userIdString = User.FindFirst("userid")?.Value;
+           
             if (string.IsNullOrEmpty(userIdString))
             {
                 return BadRequest("Unable to retrieve user ID");

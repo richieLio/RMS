@@ -66,6 +66,8 @@ namespace BussinessObject.Services.HouseServices
                 _ = await _houseRepository.Insert(NewHouse);
                 Result.IsSuccess = true;
                 Result.Code = 200;
+                //tra ve data 
+                Result.Data = NewHouse;
                 Result.Message = "Create House successfully!";
             }
             catch (Exception e)
