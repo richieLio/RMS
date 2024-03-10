@@ -10,8 +10,6 @@ namespace DataAccess.Models.HouseModel
 {
     public class HouseCreateReqModel
     {
-
-
         public string? Name { get; set; }
 
         public string? Address { get; set; }
