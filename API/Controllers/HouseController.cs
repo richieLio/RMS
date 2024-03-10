@@ -1,6 +1,7 @@
 ﻿using BussinessObject.Services.HouseServices;
 using DataAccess.Entities;
 using DataAccess.Models.HouseModel;
+using DataAccess.Models.RoomModel;
 using DataAccess.Models.UserModel;
 using DataAccess.ResultModel;
 using Microsoft.AspNetCore.Authorization;
@@ -23,7 +24,8 @@ namespace API.Controllers
         [HttpGet("list")]
         public async Task<IActionResult> GetHouses(int page)
         {
-            var userIdString = User.FindFirst("userid")?.Value;
+             var userIdString = User.FindFirst("userid")?.Value;
+           
             if (string.IsNullOrEmpty(userIdString))
             {
                 return BadRequest("Unable to retrieve user ID");
@@ -36,9 +38,10 @@ namespace API.Controllers
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
         [HttpPost("add-new")]
-        public async Task<IActionResult> CreateHouse([FromBody] HouseCreateReqModel Form)
+        public async Task<IActionResult> CreateHouse([FromBody] HouseRoomCreateReqModel Form)
         {
-            var userIdString = User.FindFirst("userid")?.Value;
+             var userIdString = User.FindFirst("userid")?.Value;
+           
             if (string.IsNullOrEmpty(userIdString))
             {
                 return BadRequest("Unable to retrieve user ID");

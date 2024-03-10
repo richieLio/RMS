@@ -21,9 +21,11 @@ namespace DataAccess.Models.HouseModel
         public int? AvailableRoom { get; set; }
     }
 
-    public class HouseUpdateStatusReqModel
+    public class HouseUpdateAvaiableRoomReqModel
     {
-        public Guid Id { get; set; }
-        public string? Status { get; set; }
+        public Guid HouseId { get; set; }
+        public int AvailableRoom { get; set; }
+
     }
+
 }
