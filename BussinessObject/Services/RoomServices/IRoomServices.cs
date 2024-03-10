@@ -1,4 +1,5 @@
 ﻿using DataAccess.Models.CustomerModel;
+using DataAccess.Models.HouseModel;
 using DataAccess.Models.RoomModel;
 using DataAccess.ResultModel;
 using System;
@@ -12,7 +13,7 @@ namespace BussinessObject.Services.RoomServices
     public interface IRoomServices
     {
         public Task<ResultModel> AddRangeRoom(RoomCreateReqModel roomCreateReqModel);
-        public Task<ResultModel> AddCustomerToRoom(Guid userId, CustomerCreateReqModel customerCreateReqModel);
+        public Task<ResultModel> AddCustomerToRoom(Guid userId, CustomerCreateReqModel customerCreateReqModel, HouseUpdateAvaiableRoomReqModel houseUpdateAvaiableRoom);
         public Task<ResultModel> GetCustomerByRoomId(Guid userId, Guid roomId);
     }
 }

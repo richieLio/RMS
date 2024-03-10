@@ -28,7 +28,7 @@ namespace API.Controllers
         }
 
         [HttpPost("add-customer-to-room")]
-        public async Task<IActionResult> AddCusomerToRoom([FromBody] CustomerCreateReqModel Form)
+        public async Task<IActionResult> AddCusomerToRoom([FromBody] CustomerCreateReqModel Form, [FromQuery] HouseUpdateAvaiableRoomReqModel updateForm)
         {
             var userIdString = User.FindFirst("userid")?.Value;
             if (string.IsNullOrEmpty(userIdString))
@@ -39,7 +39,7 @@ namespace API.Controllers
             {
                 return BadRequest("Invalid user ID format");
             }
-            ResultModel result = await _roomServices.AddCustomerToRoom(userId, Form);
+            ResultModel result = await _roomServices.AddCustomerToRoom(userId, Form, updateForm);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
         [HttpGet("information")]

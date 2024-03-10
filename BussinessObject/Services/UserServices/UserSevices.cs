@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using DataAccess.Enums;
 using Business.Ultilities;
 using DataAccess.Models.EmailModel;
+using MySqlX.XDevAPI.Common;
 
 namespace BussinessObject.Services.UserServices
 {
@@ -111,7 +112,7 @@ namespace BussinessObject.Services.UserServices
                     }
                     string FilePath = "../BussinessObject/TemplateEmail/FirstInformation.html";
 
-             
+
                     string Html = File.ReadAllText(FilePath);
                     Html = Html.Replace("{{Email}}", RegisterForm.Email);
                     Html = Html.Replace("{{OTP}}", $"{OTP}");
@@ -123,7 +124,7 @@ namespace BussinessObject.Services.UserServices
                         NewUser.Otp = OTP;
                         NewUser.Otpexpiration = expirationTime;
                         NewUser.Id = Guid.NewGuid();
-                        NewUser.Status = UserStatus.INACTIVE; 
+                        NewUser.Status = UserStatus.INACTIVE;
                         NewUser.CreatedAt = DateTime.Now;
                         NewUser.Role = UserEnum.OWNER;
                         var HashedPasswordModel = Encoder.CreateHashPassword(RegisterForm.Password);
@@ -157,7 +158,7 @@ namespace BussinessObject.Services.UserServices
         private string GenerateOTP()
         {
             Random rnd = new Random();
-            int otp = rnd.Next(100000, 999999); 
+            int otp = rnd.Next(100000, 999999);
             return otp.ToString();
         }
 
@@ -332,7 +333,7 @@ namespace BussinessObject.Services.UserServices
                 var user = await _userRepository.GetUserByVerificationToken(verificationModel.OTP);
                 if (user != null && user.Otpexpiration > DateTime.Now)
                 {
-                    
+
                     user.Status = UserStatus.ACTIVE;
                     await _userRepository.Update(user);
 
@@ -345,7 +346,7 @@ namespace BussinessObject.Services.UserServices
                 }
                 else if (user.Otpexpiration < DateTime.Now)
                 {
-                  
+
                     return new ResultModel
                     {
                         IsSuccess = false,
@@ -375,5 +376,59 @@ namespace BussinessObject.Services.UserServices
             }
         }
 
+        public async Task<ResultModel> ResendVerifyOTP(UserReqModel RegisterForm)
+        {
+            ResultModel Result = new();
+            try
+            {
+                var existingUser = await _userRepository.GetUserByEmail(RegisterForm.Email);
+                if (existingUser == null)
+                {
+                    Result.IsSuccess = false;
+                    Result.Code = 404;
+                    Result.Message = "User not found.";
+                    return Result;
+                }
+                else
+                {
+                    string OTP = GenerateOTP();
+                    DateTime expirationTime = DateTime.Now.AddMinutes(10);
+
+                    string FilePath = "../BussinessObject/TemplateEmail/FirstInformation.html";
+                    string Html = File.ReadAllText(FilePath);
+                    Html = Html.Replace("{{Email}}", RegisterForm.Email);
+                    Html = Html.Replace("{{OTP}}", $"{OTP}");
+
+                    bool emailSent = await EmailUltilities.SendEmail(RegisterForm.Email, "Email Verification", Html);
+
+                    if (emailSent)
+                    {
+                        existingUser.Otp = OTP;
+                        existingUser.Otpexpiration = expirationTime;
+
+
+                        await _userRepository.Update(existingUser);
+
+                        Result.IsSuccess = true;
+                        Result.Code = 200;
+                        Result.Message = "Verification email sent successfully!";
+                    }
+                    else
+                    {
+                        // Handle email sending failure
+                        Result.IsSuccess = false;
+                        Result.Code = 500;
+                        Result.Message = "Failed to send verification email. Please try again later.";
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Result.IsSuccess = false;
+                Result.Code = 400;
+                Result.ResponseFailed = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+            }
+            return Result;
+        }
     }
 }

@@ -77,14 +77,14 @@
         });
     });
 
-    // Connect Database 
-    //builder.Services.AddDbContext<HouseManagementContext>(ServiceLifetime.Transient);
-    //builder.Services.AddDbContext<HouseManagementContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("HouseManagement")));
-    builder.Services.AddDbContext<HouseManagementContext>(option => option.UseMySQL(builder.Configuration.GetConnectionString("DefaultConnection")));
+// Connect Database 
+//builder.Services.AddDbContext<HouseManagementContext>(ServiceLifetime.Transient);
+//builder.Services.AddDbContext<HouseManagementContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("HouseManagement")));
+builder.Services.AddDbContext<HouseManagementContext>(option => option.UseMySQL(builder.Configuration.GetConnectionString("DefaultConnection")), ServiceLifetime.Transient);
 
 
-    // Subcribe service
-    builder.Services.AddScoped<IUserSevices, UserSevices>();
+// Subcribe service
+builder.Services.AddScoped<IUserSevices, UserSevices>();
     builder.Services.AddScoped<IVerifyServices, VerifyServices>();
     builder.Services.AddScoped<IHouseServices, HouseServices>();
     builder.Services.AddScoped<IRoomServices, RoomServices>();

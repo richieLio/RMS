@@ -25,7 +25,7 @@ namespace API.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] UserLoginReqModel LoginForm)
         {
-          ResultModel result = await _user.Login(LoginForm);
+            ResultModel result = await _user.Login(LoginForm);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 
@@ -69,7 +69,7 @@ namespace API.Controllers
             {
                 return BadRequest("Invalid user ID format");
             }
-                ResultModel result = await _user.UpdateUserProfile(updateModel);
+            ResultModel result = await _user.UpdateUserProfile(updateModel);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 
@@ -95,7 +95,7 @@ namespace API.Controllers
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPassword([FromBody] UserResetPasswordReqModel ResetPasswordReqModel)
         {
-           ResultModel result = await _user.ResetPassword(ResetPasswordReqModel);
+            ResultModel result = await _user.ResetPassword(ResetPasswordReqModel);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
         [HttpPost("verify-email")]
@@ -108,9 +108,15 @@ namespace API.Controllers
             }
             catch (Exception ex)
             {
-               
+
                 return StatusCode(500, "An error occurred while processing your request.");
             }
+        }
+        [HttpPut("resend-verify-email-otp")]
+        public async Task<IActionResult> ResendVerifyEmail([FromBody] UserReqModel Form)
+        {
+            ResultModel result = await _user.ResendVerifyOTP(Form);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 
     }

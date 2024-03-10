@@ -78,13 +78,17 @@ namespace BussinessObject.Services.RoomServices
             }
             return Result;
         }
-        public async Task<ResultModel> AddCustomerToRoom(Guid userId, CustomerCreateReqModel customerCreateReqModel)
+        
+        public async Task<ResultModel> AddCustomerToRoom(Guid userId, CustomerCreateReqModel customerCreateReqModel, HouseUpdateAvaiableRoomReqModel houseUpdateAvaiableRoom)
         {
             ResultModel result = new();
             try
             {
                 var user = await _userRepository.GetUserByID(userId);
-                if (user == null)
+                var house = await _houseRepository.Get(houseUpdateAvaiableRoom.HouseId);
+                int availableRoom = await _houseRepository.GetAvailableRoomByHouseId(houseUpdateAvaiableRoom.HouseId);
+
+                if (user == null || house == null)
                 {
                     result.IsSuccess = false;
                     result.Code = 404;
@@ -141,8 +145,11 @@ namespace BussinessObject.Services.RoomServices
                     StartDate = DateTime.Now,
                     EndDate = customerCreateReqModel.EndDate 
                 };
-
                 await _contractRepository.Insert(contract);
+
+                // sửa số phòng còn trống
+                house.AvailableRoom = availableRoom - 1;
+                _ = await _houseRepository.Update(house);
 
 
                 result.IsSuccess = true;
