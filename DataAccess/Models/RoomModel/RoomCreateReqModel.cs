@@ -1,4 +1,6 @@
-﻿using System;
+﻿using DataAccess.Models.CustomerModel;
+using DataAccess.Models.HouseModel;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,5 +15,10 @@ namespace DataAccess.Models.RoomModel
         public Guid HouseId { get; set; }
 
         public string Name { get; set; }
+    }
+    public class AddCustomerToRoomReqModel
+    {
+        public CustomerCreateReqModel customerCreateReqModel { get; set; }
+        public HouseUpdateAvaiableRoomReqModel houseUpdateAvaiableRoom { get; set; }
     }
 }
