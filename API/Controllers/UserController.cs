@@ -109,7 +109,7 @@ namespace API.Controllers
             }
         }
         [HttpPut("resend-verify-email-otp")]
-        public async Task<IActionResult> ResendVerifyEmail([FromBody] UserReqModel Form)
+        public async Task<IActionResult> ResendVerifyEmail([FromBody] UserResendOTPReqModel Form)
         {
             ResultModel result = await _user.ResendVerifyOTP(Form);
             return result.IsSuccess ? Ok(result) : BadRequest(result);

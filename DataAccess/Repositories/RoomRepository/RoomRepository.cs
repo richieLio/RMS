@@ -56,5 +56,10 @@ namespace DataAccess.Repositories.RoomRepository
             return await _rooms
                 .FirstOrDefaultAsync(r => r.Id == roomId);
         }
+        public async Task<bool> IsCustomerInRoom(Guid customerId, Guid roomId)
+        {
+            return await _context.Users
+                .AnyAsync(u => u.Id == customerId && u.Rooms.Any(r => r.Id == roomId));
+        }
     }
 }

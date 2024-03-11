@@ -13,7 +13,6 @@ namespace BussinessObject.Services.CustomerServices
     {
         public Task<ResultModel> Login(CustomerLoginReqModel LoginForm);
 
-        public Task<ResultModel> CreateSecondPass(string token, CustomerCreate2ndPassReqModel customerCreate2NdPassReqModel);
         Task<ResultModel> VerifySecondPass(string token, SecondPassVerificationReqModel secondPassVerificationModel);
     }
 }

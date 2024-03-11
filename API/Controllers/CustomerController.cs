@@ -26,13 +26,7 @@ namespace API.Controllers
             ResultModel result = await _customerServices.Login(LoginForm);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
-        [HttpPut("create-2nd-pass")]
-        public async Task<IActionResult> Create2ndPass([FromBody] CustomerCreate2ndPassReqModel customerCreate2NdPassReqModel)
-        {
-            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
-            ResultModel result = await _customerServices.CreateSecondPass(token, customerCreate2NdPassReqModel);
-            return result.IsSuccess ? Ok(result) : BadRequest(result);
-        }
+       
         [HttpPut("verify-2nd-pass")]
         public async Task<IActionResult> VerifySecondPass([FromBody] SecondPassVerificationReqModel secondPassVerificationModel)
         {

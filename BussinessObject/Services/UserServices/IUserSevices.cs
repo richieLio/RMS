@@ -15,7 +15,7 @@ namespace BussinessObject.Services.UserServices
 
         public Task<ResultModel> Login(UserLoginReqModel LoginForm);
 
-        public Task<ResultModel> ResendVerifyOTP(UserReqModel RegisterForm);
+        public Task<ResultModel> ResendVerifyOTP(UserResendOTPReqModel RegisterForm);
         public Task<ResultModel> CreateAccount(UserReqModel RegisterForm);
         Task<ResultModel> GetUserProfile(Guid userId);
         Task<ResultModel> UpdateUserProfile(UserUpdateModel updateModel);

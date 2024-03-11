@@ -15,7 +15,9 @@ using System.Linq;
 using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Net.WebRequestMethods;
 using Encoder = Business.Ultilities.Encoder;
+using File = System.IO.File;
 
 
 namespace BussinessObject.Services.CustomerServices
@@ -33,68 +35,6 @@ namespace BussinessObject.Services.CustomerServices
             _roomRepository = roomRepository;
         }
 
-        public async Task<ResultModel> CreateSecondPass(string token, CustomerCreate2ndPassReqModel customerCreate2NdPassReqModel)
-        {
-            ResultModel Result = new();
-            try
-            {
-                Encoder encoder = new Encoder();
-                Guid houseId = new Guid(encoder.DecodeToken(token, "houseid"));
-
-                var house = await _houseRepository.Get(houseId);
-                if (house == null)
-                {
-                    Result.IsSuccess = false;
-                    Result.Code = 404;
-                    Result.Message = "Not found";
-                }
-                else
-                {
-                    var roomPass = await _roomRepository.Get(customerCreate2NdPassReqModel.RoomId);
-
-                    // Validate if the second password consists of exactly 6 digits
-                    if (!IsSixDigitNumeric(customerCreate2NdPassReqModel.SecondPassword))
-                    {
-                        Result.IsSuccess = false;
-                        Result.Code = 400;
-                        Result.Message = "Second password must be a 6-digit numeric value.";
-                        return Result;
-                    }
-
-                    var HashedPasswordModel = Encoder.CreateHash2ndPassword(customerCreate2NdPassReqModel.SecondPassword);
-
-                    roomPass.SecondPassword = HashedPasswordModel.HashedPassword;
-
-                    _ = await _roomRepository.Update(roomPass);
-                    Result.IsSuccess = true;
-                    Result.Code = 200;
-                    Result.Message = "Create second password successfully!";
-                }
-
-            }
-            catch (Exception e)
-            {
-                Result.IsSuccess = false;
-                Result.Code = 400;
-                Result.ResponseFailed = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
-            }
-            return Result;
-        }
-
-        // Helper method to check if a string is a 6-digit numeric value
-        private bool IsSixDigitNumeric(string value)
-        {
-            if (string.IsNullOrEmpty(value) || value.Length != 6)
-                return false;
-
-            foreach (char c in value)
-            {
-                if (!char.IsDigit(c))
-                    return false;
-            }
-
-            return true;
-        }
 
 
         public async Task<ResultModel> Login(CustomerLoginReqModel LoginForm)
@@ -171,7 +111,7 @@ namespace BussinessObject.Services.CustomerServices
                 else
                 {
 
-                  
+
                     var PasswordStored = room.SecondPassword;
 
                     var Verify = Encoder.Verify2ndPasswordHashed(secondPassVerificationModel.SecondPassword, PasswordStored);
@@ -185,7 +125,7 @@ namespace BussinessObject.Services.CustomerServices
                         IMapper mapper = config.CreateMapper();
                         RoomResModel roomResModel = mapper.Map<RoomResModel>(room);
 
-                       
+
 
                         Result.IsSuccess = true;
                         Result.Code = 200;
