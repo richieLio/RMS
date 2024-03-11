@@ -67,6 +67,8 @@ namespace BussinessObject.Services.UserServices
                         Result.IsSuccess = true;
                         Result.Code = 200;
                         Result.Data = LoginResData;
+                        User.LastLoggedIn = DateTime.Now;
+                        _ = await _userRepository.Update(User);
                     }
                     else
                     {
@@ -376,7 +378,7 @@ namespace BussinessObject.Services.UserServices
             }
         }
 
-        public async Task<ResultModel> ResendVerifyOTP(UserReqModel RegisterForm)
+        public async Task<ResultModel> ResendVerifyOTP(UserResendOTPReqModel RegisterForm)
         {
             ResultModel Result = new();
             try

@@ -49,4 +49,9 @@ namespace DataAccess.Models.UserModel
         public string Email { get; set; } = null!;
         public string OTPCode { get; set; } = null!;
     }
+    public class UserResendOTPReqModel
+    {
+        public string? Email { get; set; }
+       
+    }
 }
