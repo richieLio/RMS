@@ -13,12 +13,7 @@ namespace DataAccess.Models.HouseModel
 
         public string? Address { get; set; }
 
-        /// <summary>
-        /// Số lượng phòng
-        /// </summary>
-        public int? RoomQuantity { get; set; }
 
-        public int? AvailableRoom { get; set; }
     }
 
     public class HouseUpdateAvaiableRoomReqModel

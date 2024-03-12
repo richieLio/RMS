@@ -28,7 +28,7 @@ namespace API.Controllers
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 
-        [HttpPost("register-user")]
+        [HttpPost("register")]
         public async Task<IActionResult> CreateUser([FromBody] UserReqModel Form)
         {
             ResultModel result = await _user.CreateAccount(Form);

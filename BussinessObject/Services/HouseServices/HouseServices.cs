@@ -17,6 +17,7 @@ using DataAccess.Repositories.UserRepository;
 using DataAccess.Models.RoomModel;
 using DataAccess.Repositories.RoomRepository;
 using static Org.BouncyCastle.Bcpg.Attr.ImageAttrib;
+using MySqlX.XDevAPI.Common;
 
 
 namespace BussinessObject.Services.HouseServices
@@ -72,7 +73,10 @@ namespace BussinessObject.Services.HouseServices
                     return Result;
                 }
                 _ = await _houseRepository.Insert(NewHouse);
-
+                Result.IsSuccess = true;
+                Result.Code = 200;
+                Result.Data = NewHouse;
+                Result.Message = "House created successfully";
 
                 //auto generate room based on room quantity
                 if (roomQuantity.HasValue && roomQuantity > 0)
@@ -156,7 +160,7 @@ namespace BussinessObject.Services.HouseServices
             return result;
         }
 
-        public async Task<ResultModel> GetHousesByUserId(Guid UserId, int page)
+        public async Task<ResultModel> GetHousesByUserId(int page, Guid UserId)
         {
             ResultModel result = new ResultModel();
 
@@ -261,11 +265,10 @@ namespace BussinessObject.Services.HouseServices
                 house.OwnerId = OwnerId;
                 house.Name = houseUpdateReqModel.Name;
                 house.Address = houseUpdateReqModel.Address;
-                house.RoomQuantity = houseUpdateReqModel.RoomQuantity;
-                house.AvailableRoom = houseUpdateReqModel.AvailableRoom;
                 _ = await _houseRepository.Update(house);
                 result.IsSuccess = true;
                 result.Code = 200;
+                result.Data = house;
                 result.Message = "House updated successfully";
             }
             catch (Exception ex)
