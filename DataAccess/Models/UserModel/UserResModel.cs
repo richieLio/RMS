@@ -26,6 +26,9 @@
 
         public string Token { get; set; }
     }
-
-
+    public class UserVerifyOTPResModel
+    {
+        public string Email { get; set; } = null!;
+        public string OTPCode { get; set; } = null!;
+    }
 }
