@@ -1,4 +1,5 @@
-﻿using DataAccess.ResultModel;
+﻿using DataAccess.Models.ContractModel;
+using DataAccess.ResultModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,5 +12,7 @@ namespace BussinessObject.Services.ContractServices
     {
         Task<ResultModel> GetContractList(int page);
         Task<ResultModel> GetContractInformation(Guid contractId);
+        Task<ResultModel> UpdateContract(ContractReqModel contractReqModel);
+        Task<ResultModel> UpdateContractStatus(ContractUpdateStatusReqModel contractUpdateStatusReqModel);
     }
 }

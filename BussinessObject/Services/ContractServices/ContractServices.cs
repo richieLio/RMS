@@ -145,5 +145,67 @@ namespace BussinessObject.Services.ContractServices
             }
             return result;
         }
+
+        public async Task<ResultModel> UpdateContract(ContractReqModel contractReqModel)
+        {
+            ResultModel result = new();
+            try
+            {
+                var Contract = await _contractRepository.GetContractById(contractReqModel.Id);
+                if (Contract == null)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 404;
+                    result.Message = "Contract not found";
+                    return result;
+                }
+
+                Contract.EndDate = contractReqModel.EndDate;
+                Contract.ImagesUrl = contractReqModel.ImagesUrl;
+                Contract.FileUrl = contractReqModel.FileUrl;
+
+                _ = await _contractRepository.Update(Contract);
+                result.IsSuccess = true;
+                result.Code = 200;
+                result.Message = "Contract updated successfully";
+            }
+            catch (Exception ex)
+            {
+                result.IsSuccess = false;
+                result.Code = 400;
+                result.Message = ex.Message;
+            }
+            return result;
+        }
+
+        public async Task<ResultModel> UpdateContractStatus(ContractUpdateStatusReqModel contractUpdateStatusReqModel)
+        {
+            ResultModel result = new();
+            try
+            {
+                var Contract = await _contractRepository.GetContractById(contractUpdateStatusReqModel.Id);
+                if (Contract == null)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 404;
+                    result.Message = "Contract not found";
+                    return result;
+                }
+
+                Contract.Status = contractUpdateStatusReqModel.Status;
+
+                _ = await _contractRepository.Update(Contract);
+                result.IsSuccess = true;
+                result.Code = 200;
+                result.Message = "Contract updated status successfully";
+            }
+            catch (Exception ex)
+            {
+                result.IsSuccess = false;
+                result.Code = 400;
+                result.Message = ex.Message;
+            }
+            return result;
+        }
     }
 }
