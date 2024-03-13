@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DataAccess.Enums
+﻿namespace DataAccess.Enums
 {
     public class UserEnum
     {
@@ -12,11 +6,11 @@ namespace DataAccess.Enums
         public static readonly string FEMALE = "FEMALE";
         public static readonly string OWNER = "OWNER";
         public static readonly string CUSTOMER = "CUSTOMER";
-
     }
+
     public class UserStatus
     {
-        public static readonly string ACTIVE = "Active"; 
+        public static readonly string ACTIVE = "Active";
         public static readonly string INACTIVE = "Inactive";
         public static readonly string RESETPASSWORD = "ResetPassword";
         public static readonly string DEACTIVE = "Deactive";

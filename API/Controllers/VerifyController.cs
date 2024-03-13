@@ -1,7 +1,6 @@
 ﻿using BussinessObject.Services.VerifyServices;
 using DataAccess.Models.UserModel;
 using DataAccess.ResultModel;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers

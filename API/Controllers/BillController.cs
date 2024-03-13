@@ -1,8 +1,6 @@
 ﻿using BussinessObject.Services.BillServices;
 using DataAccess.Models.BillModel;
-using DataAccess.Models.HouseModel;
 using DataAccess.ResultModel;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers

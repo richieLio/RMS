@@ -3,11 +3,6 @@ using DataAccess.Enums;
 using DataAccess.Repositories.OTPRepo;
 using DataAccess.Repositories.UserRepository;
 using DataAccess.ResultModel;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using EmailUltilities = Business.Ultilities.Email;
 
 
@@ -136,5 +131,5 @@ namespace BussinessObject.Services.VerifyServices
             }
             return Result;
         }
-    }   
+    }
 }

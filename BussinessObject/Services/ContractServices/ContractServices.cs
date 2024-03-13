@@ -1,18 +1,11 @@
 ﻿using BussinessObject.Ultilities;
 using DataAccess.Entities;
 using DataAccess.Models.ContractModel;
-using DataAccess.Models.RoomModel;
 using DataAccess.Repositories.ContractRepository;
 using DataAccess.Repositories.CustomerRepository;
-using DataAccess.Repositories.HouseRepository;
 using DataAccess.Repositories.RoomRepository;
 using DataAccess.Repositories.UserRepository;
 using DataAccess.ResultModel;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BussinessObject.Services.ContractServices
 {

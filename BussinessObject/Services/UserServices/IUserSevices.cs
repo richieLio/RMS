@@ -1,12 +1,6 @@
-﻿using DataAccess.ResultModel;
+﻿using DataAccess.Models.EmailModel;
 using DataAccess.Models.UserModel;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DataAccess.Entities;
-using DataAccess.Models.EmailModel;
+using DataAccess.ResultModel;
 
 namespace BussinessObject.Services.UserServices
 {

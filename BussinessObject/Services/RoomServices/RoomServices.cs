@@ -4,20 +4,12 @@ using Data.Enums;
 using DataAccess.Entities;
 using DataAccess.Enums;
 using DataAccess.Models.CustomerModel;
-using DataAccess.Models.HouseModel;
 using DataAccess.Models.RoomModel;
-using DataAccess.Models.UserModel;
 using DataAccess.Repositories.ContractRepository;
 using DataAccess.Repositories.HouseRepository;
 using DataAccess.Repositories.RoomRepository;
 using DataAccess.Repositories.UserRepository;
 using DataAccess.ResultModel;
-using System;
-using System.Collections.Generic;
-
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using EmailUltilities = Business.Ultilities.Email;
 using Encoder = Business.Ultilities.Encoder;
 
@@ -112,7 +104,9 @@ namespace BussinessObject.Services.RoomServices
                     result.Code = 404;
                     result.Message = "User is existed";
                     return result;
-                } else {
+                }
+                else
+                {
                     // thêm thông tin khách
 
                     var newUser = new User
