@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
+﻿using System.Text.Json.Serialization;
 
 namespace DataAccess.Models.CustomerModel
 {
@@ -50,7 +45,7 @@ namespace DataAccess.Models.CustomerModel
     {
         public Guid RoomId { get; set; }
         public string RoomName { get; set; }
-        public string HouseAccount {  get; set; }
+        public string HouseAccount { get; set; }
         public string HousePassword { get; set; }
         public string? SecondPassword { get; set; }
     }

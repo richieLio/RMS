@@ -1,11 +1,6 @@
 ﻿using DataAccess.Entities;
 using DataAccess.Repositories.GenericRepository;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DataAccess.Repositories.HouseRepository
 {
@@ -27,8 +22,8 @@ namespace DataAccess.Repositories.HouseRepository
         public async Task<int> GetAvailableRoomByHouseId(Guid houseId)
         {
             var availableRoomCount = _context.Rooms
-                 .Include(r => r.Users) 
-                 .Count(r => r.HouseId == houseId && !r.Users.Any()); 
+                 .Include(r => r.Users)
+                 .Count(r => r.HouseId == houseId && !r.Users.Any());
 
             return availableRoomCount;
         }

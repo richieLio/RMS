@@ -1,7 +1,5 @@
 ﻿using BussinessObject.Services.ContractServices;
-using BussinessObject.Services.RoomServices;
 using DataAccess.Models.ContractModel;
-using DataAccess.Models.RoomModel;
 using DataAccess.ResultModel;
 using Microsoft.AspNetCore.Mvc;
 

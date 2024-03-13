@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DataAccess.Models.ContractModel
+﻿namespace DataAccess.Models.ContractModel
 {
     public class ContractResModel
     {
@@ -69,7 +63,7 @@ namespace DataAccess.Models.ContractModel
         public string? Dob { get; set; }
 
         public string? FullName { get; set; }
-        
+
         public string? LicensePlates { get; set; }
 
         public string? CreatedAt { get; set; }

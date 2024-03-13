@@ -1,9 +1,6 @@
 ﻿using BussinessObject.Services.CustomerServices;
-using DataAccess.Entities;
 using DataAccess.Models.CustomerModel;
-using DataAccess.Models.UserModel;
 using DataAccess.ResultModel;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -26,7 +23,7 @@ namespace API.Controllers
             ResultModel result = await _customerServices.Login(LoginForm);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
-       
+
         [HttpPut("verify-2nd-pass")]
         public async Task<IActionResult> VerifySecondPass([FromBody] SecondPassVerificationReqModel secondPassVerificationModel)
         {

@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
+﻿using System.Text.Json.Serialization;
 
 namespace DataAccess.Models.BillModel
 {
     public class BillCreateReqModel
     {
-     
+
         public decimal? RentAmount { get; set; }
         /// Đơn giá điện
         public decimal? ElectricityUnitPrice { get; set; }

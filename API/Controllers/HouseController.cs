@@ -1,11 +1,6 @@
 ﻿using BussinessObject.Services.HouseServices;
-using DataAccess.Entities;
 using DataAccess.Models.HouseModel;
-using DataAccess.Models.RoomModel;
-using DataAccess.Models.UserModel;
 using DataAccess.ResultModel;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -77,7 +72,7 @@ namespace API.Controllers
             var userIdString = User.FindFirst("userid")?.Value;
             if (string.IsNullOrEmpty(userIdString))
             {
-                return BadRequest("Unable to retrieve user ID"); 
+                return BadRequest("Unable to retrieve user ID");
             }
             if (!Guid.TryParse(userIdString, out Guid userId))
             {

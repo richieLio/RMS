@@ -1,23 +1,12 @@
 ﻿using AutoMapper;
 using DataAccess.Entities;
-using DataAccess.Enums;
 using DataAccess.Models.CustomerModel;
 using DataAccess.Models.RoomModel;
-using DataAccess.Models.UserModel;
 using DataAccess.Repositories.CustomerRepository;
 using DataAccess.Repositories.HouseRepository;
 using DataAccess.Repositories.RoomRepository;
-using DataAccess.Repositories.UserRepository;
 using DataAccess.ResultModel;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Principal;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Net.WebRequestMethods;
 using Encoder = Business.Ultilities.Encoder;
-using File = System.IO.File;
 
 
 namespace BussinessObject.Services.CustomerServices
