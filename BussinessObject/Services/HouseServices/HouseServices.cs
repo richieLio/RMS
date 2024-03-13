@@ -14,6 +14,10 @@ using Encoder = Business.Ultilities.Encoder;
 using EmailUltilities = Business.Ultilities.Email;
 using Data.Enums;
 using DataAccess.Repositories.UserRepository;
+using DataAccess.Models.RoomModel;
+using DataAccess.Repositories.RoomRepository;
+using static Org.BouncyCastle.Bcpg.Attr.ImageAttrib;
+using MySqlX.XDevAPI.Common;
 
 
 namespace BussinessObject.Services.HouseServices
@@ -22,20 +26,25 @@ namespace BussinessObject.Services.HouseServices
     {
         private readonly IHouseRepository _houseRepository;
         private readonly IUserRepository _userRepository;
-        public HouseServices(IHouseRepository houseRepository, IUserRepository userRepository)
+        private readonly IRoomRepository _roomRepository;
+        public HouseServices(IHouseRepository houseRepository, IUserRepository userRepository, IRoomRepository roomRepository)
         {
             _houseRepository = houseRepository;
             _userRepository = userRepository;
+            _roomRepository = roomRepository;
         }
 
-        public async Task<ResultModel> AddHouse(Guid ownerId, HouseCreateReqModel houseCreateReqModel)
+        public async Task<ResultModel> AddHouse(Guid ownerId, HouseRoomCreateReqModel houseRoomCreateReqModel)
         {
             ResultModel Result = new();
             try
             {
+                var houseCreateReqModel = houseRoomCreateReqModel.HouseCreateReqModel;
+                var roomCreateReqModel = houseRoomCreateReqModel.RoomCreateReqModel;
                 var config = new MapperConfiguration(cfg =>
                 {
                     cfg.CreateMap<HouseCreateReqModel, House>().ForMember(dest => dest.Password, opt => opt.Ignore()); ;
+                    cfg.CreateMap<RoomCreateReqModel, Room>();
                 });
                 IMapper mapper = config.CreateMapper();
                 House NewHouse = mapper.Map<HouseCreateReqModel, House>(houseCreateReqModel);
@@ -50,14 +59,14 @@ namespace BussinessObject.Services.HouseServices
                 var availableRoom = houseCreateReqModel?.AvailableRoom;
                 var roomQuantity = houseCreateReqModel?.RoomQuantity;
 
-                NewHouse.Id = Guid.NewGuid();
                 NewHouse.OwnerId = ownerId;
                 NewHouse.Password = HashedPasswordModel.HashedPassword;
                 NewHouse.Salt = HashedPasswordModel.Salt;
                 NewHouse.RoomQuantity = roomQuantity;
-                NewHouse.AvailableRoom = availableRoom;
+                NewHouse.AvailableRoom = roomQuantity; //set available room == room quantity when user did not add any customer into a room
                 NewHouse.Status = GeneralStatus.ACTIVE;
-                if(availableRoom > roomQuantity){
+                if (availableRoom > roomQuantity)
+                {
                     Result.IsSuccess = false;
                     Result.Code = 400;
                     Result.Message = "Available room must be smaller than room quantity";
@@ -66,8 +75,33 @@ namespace BussinessObject.Services.HouseServices
                 _ = await _houseRepository.Insert(NewHouse);
                 Result.IsSuccess = true;
                 Result.Code = 200;
-                Result.Message = "Create House successfully!";
+                Result.Data = NewHouse;
+                Result.Message = "House created successfully";
+
+                //auto generate room based on room quantity
+                if (roomQuantity.HasValue && roomQuantity > 0)
+                {
+                    var newRooms = new List<Room>();
+                    for (int i = 0; i < roomQuantity.Value; i++)
+                    {
+                        Room newRoom = mapper.Map<RoomCreateReqModel, Room>(roomCreateReqModel);
+
+
+                        newRoom.HouseId = NewHouse.Id;
+                        newRoom.Name = "A" + i; //default name
+                        newRoom.Status = GeneralStatus.ACTIVE;
+                        newRooms.Add(newRoom);
+                    }
+                    await _roomRepository.AddRange(newRooms);
+                }
+                Result.IsSuccess = true;
+                Result.Code = 200;
+                //tra ve data 
+                Result.Data = NewHouse;
+                Result.Message = "Create House successfully!, Rooms are auto generated with default name, you can rename later!";
             }
+
+
             catch (Exception e)
             {
                 Result.IsSuccess = false;
@@ -126,7 +160,7 @@ namespace BussinessObject.Services.HouseServices
             return result;
         }
 
-        public async Task<ResultModel> GetHousesByUserId(Guid UserId, int page)
+        public async Task<ResultModel> GetHousesByUserId(int page, Guid UserId)
         {
             ResultModel result = new ResultModel();
 
@@ -171,6 +205,42 @@ namespace BussinessObject.Services.HouseServices
             return result;
         }
 
+        public async Task<ResultModel> UpdateAvailableRoom(Guid userId, HouseUpdateAvaiableRoomReqModel houseUpdateAvaiableRoom)
+        {
+
+            ResultModel Result = new();
+            try
+            {
+                var user = await _userRepository.Get(userId);
+                var house = await _houseRepository.Get(houseUpdateAvaiableRoom.HouseId);
+                int availableRoom = await _houseRepository.GetAvailableRoomByHouseId(houseUpdateAvaiableRoom.HouseId);
+                if (user == null || house == null)
+                {
+                    Result.IsSuccess = false;
+                    Result.Code = 400;
+                    Result.Message = "Not found";
+                    return Result;
+                }
+
+                house.AvailableRoom = houseUpdateAvaiableRoom.AvailableRoom;
+
+
+                _ = await _houseRepository.Update(house);
+                Result.IsSuccess = true;
+                Result.Code = 200;
+                Result.Message = "Available room updated successfully";
+            }
+            catch (Exception ex)
+            {
+                Result.IsSuccess = false;
+                Result.Code = 400;
+                Result.Message = "User doesn't have the required roles";
+
+            }
+            return Result;
+
+        }
+
         public async Task<ResultModel> UpdateHouse(Guid OwnerId, HouseUpdateReqModel houseUpdateReqModel)
         {
             ResultModel result = new();
@@ -195,11 +265,10 @@ namespace BussinessObject.Services.HouseServices
                 house.OwnerId = OwnerId;
                 house.Name = houseUpdateReqModel.Name;
                 house.Address = houseUpdateReqModel.Address;
-                house.RoomQuantity = houseUpdateReqModel.RoomQuantity;
-                house.AvailableRoom = houseUpdateReqModel.AvailableRoom;
                 _ = await _houseRepository.Update(house);
                 result.IsSuccess = true;
                 result.Code = 200;
+                result.Data = house;
                 result.Message = "House updated successfully";
             }
             catch (Exception ex)

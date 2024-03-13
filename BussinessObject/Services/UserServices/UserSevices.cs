@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using DataAccess.Enums;
 using Business.Ultilities;
 using DataAccess.Models.EmailModel;
+using MySqlX.XDevAPI.Common;
 
 namespace BussinessObject.Services.UserServices
 {
@@ -66,6 +67,8 @@ namespace BussinessObject.Services.UserServices
                         Result.IsSuccess = true;
                         Result.Code = 200;
                         Result.Data = LoginResData;
+                        User.LastLoggedIn = DateTime.Now;
+                        _ = await _userRepository.Update(User);
                     }
                     else
                     {
@@ -375,5 +378,59 @@ namespace BussinessObject.Services.UserServices
             }
         }
 
+        public async Task<ResultModel> ResendVerifyOTP(UserResendOTPReqModel RegisterForm)
+        {
+            ResultModel Result = new();
+            try
+            {
+                var existingUser = await _userRepository.GetUserByEmail(RegisterForm.Email);
+                if (existingUser == null)
+                {
+                    Result.IsSuccess = false;
+                    Result.Code = 404;
+                    Result.Message = "User not found.";
+                    return Result;
+                }
+                else
+                {
+                    string OTP = GenerateOTP();
+                    DateTime expirationTime = DateTime.Now.AddMinutes(10);
+
+                    string FilePath = "../BussinessObject/TemplateEmail/FirstInformation.html";
+                    string Html = File.ReadAllText(FilePath);
+                    Html = Html.Replace("{{Email}}", RegisterForm.Email);
+                    Html = Html.Replace("{{OTP}}", $"{OTP}");
+
+                    bool emailSent = await EmailUltilities.SendEmail(RegisterForm.Email, "Email Verification", Html);
+
+                    if (emailSent)
+                    {
+                        existingUser.Otp = OTP;
+                        existingUser.Otpexpiration = expirationTime;
+
+
+                        await _userRepository.Update(existingUser);
+
+                        Result.IsSuccess = true;
+                        Result.Code = 200;
+                        Result.Message = "Verification email sent successfully!";
+                    }
+                    else
+                    {
+                        // Handle email sending failure
+                        Result.IsSuccess = false;
+                        Result.Code = 500;
+                        Result.Message = "Failed to send verification email. Please try again later.";
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Result.IsSuccess = false;
+                Result.Code = 400;
+                Result.ResponseFailed = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+            }
+            return Result;
+        }
     }
 }

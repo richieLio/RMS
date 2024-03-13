@@ -18,6 +18,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using EmailUltilities = Business.Ultilities.Email;
+using Encoder = Business.Ultilities.Encoder;
+
+
 
 namespace BussinessObject.Services.RoomServices
 {
@@ -50,7 +54,7 @@ namespace BussinessObject.Services.RoomServices
                     IMapper mapper = config.CreateMapper();
 
                     var newRooms = new List<Room>();
-                    for (int i = 0; i < RoomQuantity.Value; i++) 
+                    for (int i = 0; i < RoomQuantity.Value; i++)
                     {
                         Room newRoom = mapper.Map<RoomCreateReqModel, Room>(roomCreateReqModel);
 
@@ -80,13 +84,20 @@ namespace BussinessObject.Services.RoomServices
             }
             return Result;
         }
-        public async Task<ResultModel> AddCustomerToRoom(Guid userId, CustomerCreateReqModel customerCreateReqModel)
+
+        public async Task<ResultModel> AddCustomerToRoom(Guid userId, AddCustomerToRoomReqModel addCustomerToRoomReqModel)
         {
             ResultModel result = new();
             try
             {
+                var customerCreateReqModel = addCustomerToRoomReqModel.customerCreateReqModel;
+                var houseUpdateAvaiableRoom = addCustomerToRoomReqModel.houseUpdateAvaiableRoom;
+
                 var user = await _userRepository.GetUserByID(userId);
-                if (user == null)
+                var house = await _houseRepository.Get(houseUpdateAvaiableRoom.HouseId);
+                int availableRoom = await _houseRepository.GetAvailableRoomByHouseId(houseUpdateAvaiableRoom.HouseId);
+
+                if (user == null || house == null)
                 {
                     result.IsSuccess = false;
                     result.Code = 404;
@@ -141,12 +152,41 @@ namespace BussinessObject.Services.RoomServices
                     CustomerId = newUser.Id,
                     RoomId = customerCreateReqModel.RoomId,
                     StartDate = DateTime.Now,
-                    EndDate = customerCreateReqModel.EndDate 
+                    EndDate = customerCreateReqModel.EndDate
                 };
-
                 await _contractRepository.Insert(contract);
 
+                // sửa số phòng còn trống
+                house.AvailableRoom = availableRoom - 1;
+                _ = await _houseRepository.Update(house);
 
+                //gửi mail mật khẩu cấp 2 cho khách
+
+                string secondPassword = Generate2ndPassword();
+                var room = await _roomRepository.Get(customerCreateReqModel.RoomId);
+                string FilePath = "../BussinessObject/TemplateEmail/Create2ndPassword.html";
+
+                string Html = File.ReadAllText(FilePath);
+                Html = Html.Replace("{{2ndPassword}}", secondPassword);
+                Html = Html.Replace("{{RoomName}}", $"{room.Name}");
+                Html = Html.Replace("{{HouseAccount}}", $"{house.HouseAccount}"); 
+              //  Html = Html.Replace("{{HousePassword}}", $"{house.Password}");
+                bool emailSent = await EmailUltilities.SendEmail(customerCreateReqModel.Email, "Email Notification", Html);
+
+                if (!emailSent)
+                {
+                    // Xử lý trường hợp gửi email không thành công
+                    result.IsSuccess = false;
+                    result.Code = 500;
+                    result.Message = "Email cannot be send.";
+                    return result;
+                }
+                //update mật khẩu cấp 2
+                var HashedPasswordModel = Encoder.CreateHash2ndPassword(secondPassword);
+                room.SecondPassword = HashedPasswordModel.HashedPassword;
+                _ = await _roomRepository.Update(room);
+
+               
                 result.IsSuccess = true;
                 result.Code = 200;
                 result.Message = "Customer added to room successfully.";
@@ -159,7 +199,12 @@ namespace BussinessObject.Services.RoomServices
             }
             return result;
         }
-
+        private string Generate2ndPassword()
+        {
+            Random rnd = new Random();
+            int otp = rnd.Next(100000, 999999);
+            return otp.ToString();
+        }
         public async Task<ResultModel> GetCustomerByRoomId(Guid userId, Guid roomId)
         {
             ResultModel result = new ResultModel();
@@ -170,12 +215,12 @@ namespace BussinessObject.Services.RoomServices
 
                 var customerModels = customers.Select(c => new CustomerResModel
                 {
-                    
+
                     Id = c.Id,
                     Email = c.Email,
                     PhoneNumber = c.PhoneNumber,
                     Address = c.Address,
-                    Gender  = c.Gender,
+                    Gender = c.Gender,
                     Dob = c.Dob.HasValue == true ? c.Dob.Value.ToString("dd/MM/yyyy") : null,
                     FullName = c.FullName,
                     LicensePlates = c.LicensePlates,
