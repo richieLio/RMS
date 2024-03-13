@@ -7,5 +7,6 @@ namespace DataAccess.Repositories.ContractRepository
     {
         Task<IEnumerable<Contract>> GetContracts();
         Task<Contract?> GetContractById(Guid contractId);
+        Task<IEnumerable<Contract>> GetContractByRoomId(Guid roomId);
     }
 }

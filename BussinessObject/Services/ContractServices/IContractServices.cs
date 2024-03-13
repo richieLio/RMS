@@ -9,5 +9,6 @@ namespace BussinessObject.Services.ContractServices
         Task<ResultModel> GetContractInformation(Guid contractId);
         Task<ResultModel> UpdateContract(ContractReqModel contractReqModel);
         Task<ResultModel> UpdateContractStatus(ContractUpdateStatusReqModel contractUpdateStatusReqModel);
+        Task<ResultModel> GetContractByRoom(Guid roomId);
     }
 }

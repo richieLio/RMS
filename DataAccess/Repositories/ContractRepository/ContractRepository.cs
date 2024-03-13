@@ -26,5 +26,11 @@ namespace DataAccess.Repositories.ContractRepository
             return await _contracts
                 .FirstOrDefaultAsync(c => c.Id == contractId);
         }
+
+        public async Task<IEnumerable<Contract>> GetContractByRoomId(Guid roomId)
+        {
+            return await _context.Contracts.Where(r => r.RoomId == roomId).ToListAsync();
+        }
+
     }
 }
