@@ -13,5 +13,8 @@ namespace DataAccess.Repositories.HouseRepository
         public Task<IEnumerable<House>> GetAllHouseByUserId(Guid UserId);
         public Task<House> GetHouseById(Guid? houseId);
         Task<int?> GetRoomQuantityByHouseId(Guid houseId);
+
+        Task<int> GetAvailableRoomByHouseId(Guid houseId);
+
     }
 }

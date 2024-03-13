@@ -109,6 +109,7 @@ namespace Business.Ultilities
                 new Claim(ClaimsIdentity.DefaultRoleClaimType, User.Role),
                 new Claim("userid", User.Id.ToString()),
                 new Claim("email", User.Email),
+                new Claim("fullname", User.FullName)
             };
 
             var Token = new JwtSecurityToken(

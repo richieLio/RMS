@@ -28,7 +28,7 @@ namespace API.Controllers
         }
 
         [HttpPost("add-customer-to-room")]
-        public async Task<IActionResult> AddCusomerToRoom([FromBody] CustomerCreateReqModel Form)
+        public async Task<IActionResult> AddCusomerToRoom([FromBody] AddCustomerToRoomReqModel Form)
         {
             var userIdString = User.FindFirst("userid")?.Value;
             if (string.IsNullOrEmpty(userIdString))

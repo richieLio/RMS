@@ -24,6 +24,15 @@ namespace DataAccess.Repositories.HouseRepository
                 .ToListAsync();
         }
 
+        public async Task<int> GetAvailableRoomByHouseId(Guid houseId)
+        {
+            var availableRoomCount = _context.Rooms
+                 .Include(r => r.Users) 
+                 .Count(r => r.HouseId == houseId && !r.Users.Any()); 
+
+            return availableRoomCount;
+        }
+
         public async Task<House> GetHouseById(Guid? houseId)
         {
             return await _context.Houses.FindAsync(houseId);
