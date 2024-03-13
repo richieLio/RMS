@@ -1,5 +1,6 @@
     using BussinessObject.Services.BillServices;
-    using BussinessObject.Services.CustomerServices;
+using BussinessObject.Services.ContractServices;
+using BussinessObject.Services.CustomerServices;
     using BussinessObject.Services.HouseServices;
     using BussinessObject.Services.RoomServices;
     using BussinessObject.Services.UserServices;
@@ -90,10 +91,11 @@ builder.Services.AddScoped<IUserSevices, UserSevices>();
     builder.Services.AddScoped<IRoomServices, RoomServices>();
     builder.Services.AddScoped<IBillServices, BillServices>();
     builder.Services.AddScoped<ICustomerServices, CustomerServices>();
+    builder.Services.AddScoped<IContractServices, ContractServices>();
 
 
-    //Subcribe repository
-    builder.Services.AddTransient<IUserRepository, UserRepository>();
+//Subcribe repository
+builder.Services.AddTransient<IUserRepository, UserRepository>();
     builder.Services.AddTransient<IOTPRepository, OTPRepository>();
     builder.Services.AddTransient<IHouseRepository, HouseRepository>();
     builder.Services.AddTransient<IRoomRepository, RoomRepository>();
