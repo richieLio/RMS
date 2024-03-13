@@ -1,12 +1,8 @@
-﻿using DataAccess.Entities;
+﻿using BussinessObject.Services.UserServices;
+using DataAccess.Models.EmailModel;
 using DataAccess.Models.UserModel;
 using DataAccess.ResultModel;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using DataAccess.ResultModel;
-using Microsoft.AspNetCore.Authorization;
-using BussinessObject.Services.UserServices;
-using DataAccess.Models.EmailModel;
 
 namespace API.Controllers
 {

@@ -1,10 +1,6 @@
-﻿using BussinessObject.Services.HouseServices;
-using BussinessObject.Services.RoomServices;
-using DataAccess.Models.CustomerModel;
-using DataAccess.Models.HouseModel;
+﻿using BussinessObject.Services.RoomServices;
 using DataAccess.Models.RoomModel;
 using DataAccess.ResultModel;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers

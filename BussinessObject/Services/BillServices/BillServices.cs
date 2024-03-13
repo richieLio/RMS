@@ -1,15 +1,8 @@
 ﻿using AutoMapper;
-using Data.Enums;
 using DataAccess.Entities;
 using DataAccess.Models.BillModel;
-using DataAccess.Models.HouseModel;
 using DataAccess.Repositories.BillRepository;
 using DataAccess.ResultModel;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BussinessObject.Services.BillServices
 {
@@ -46,7 +39,7 @@ namespace BussinessObject.Services.BillServices
                 // phí dịch vụ
                 var servicePrice = billCreateReqModel.ServicePrice;
 
-               
+
 
                 newBill.Id = Guid.NewGuid();
                 newBill.RentAmount = rentAmount;

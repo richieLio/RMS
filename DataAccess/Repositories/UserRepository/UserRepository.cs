@@ -1,11 +1,6 @@
 ﻿using DataAccess.Entities;
 using DataAccess.Repositories.GenericRepository;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DataAccess.Repositories.UserRepository
 {
@@ -23,7 +18,7 @@ namespace DataAccess.Repositories.UserRepository
                 .Where(x => x.Email.Equals(Email) || x.PhoneNumber.Equals(phoneNumber)
                             || x.CitizenIdNumber.Equals(CitizenIdNumber) || x.LicensePlates.Equals(LicensePlates)).FirstOrDefaultAsync();
 
-           
+
         }
 
         public async Task<User> GetUserByEmail(string Email)
