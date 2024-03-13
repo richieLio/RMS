@@ -2,7 +2,6 @@
 using DataAccess.Models.UserModel;
 using DataAccess.Models.VerifyModel;
 using DataAccess.ResultModel;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers

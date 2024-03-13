@@ -1,20 +1,12 @@
 ﻿using AutoMapper;
-using DataAccess.ResultModel;
+using DataAccess.Entities;
+using DataAccess.Enums;
+using DataAccess.Models.EmailModel;
 using DataAccess.Models.UserModel;
 using DataAccess.Repositories.UserRepository;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using AutoMapper;
-using DataAccess.Entities;
-using Encoder = Business.Ultilities.Encoder;
+using DataAccess.ResultModel;
 using EmailUltilities = Business.Ultilities.Email;
-using System.Threading.Tasks;
-using DataAccess.Enums;
-using Business.Ultilities;
-using DataAccess.Models.EmailModel;
-using MySqlX.XDevAPI.Common;
+using Encoder = Business.Ultilities.Encoder;
 
 namespace BussinessObject.Services.UserServices
 {

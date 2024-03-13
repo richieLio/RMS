@@ -1,10 +1,5 @@
 ﻿using DataAccess.Entities;
 using DataAccess.Repositories.GenericRepository;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DataAccess.Repositories.ContractRepository
 {
@@ -12,5 +7,6 @@ namespace DataAccess.Repositories.ContractRepository
     {
         Task<IEnumerable<Contract>> GetContracts();
         Task<Contract?> GetContractById(Guid contractId);
+        Task<IEnumerable<Contract>> GetContractByRoomId(Guid roomId);
     }
 }

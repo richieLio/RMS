@@ -1,17 +1,12 @@
 ﻿using MailKit.Security;
 using MimeKit;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Business.Ultilities
 {
     public class Email
     {
-        public Email() 
-        { 
+        public Email()
+        {
         }
         public static async Task<bool> SendEmail(string Email, string Subject, string Html)
         {

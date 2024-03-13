@@ -2,11 +2,6 @@
 using DataAccess.Entities;
 using DataAccess.Repositories.GenericRepository;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DataAccess.Repositories.ContractRepository
 {
@@ -31,5 +26,11 @@ namespace DataAccess.Repositories.ContractRepository
             return await _contracts
                 .FirstOrDefaultAsync(c => c.Id == contractId);
         }
+
+        public async Task<IEnumerable<Contract>> GetContractByRoomId(Guid roomId)
+        {
+            return await _context.Contracts.Where(r => r.RoomId == roomId).ToListAsync();
+        }
+
     }
 }

@@ -1,12 +1,5 @@
-﻿using DataAccess.Models.CustomerModel;
-using DataAccess.Models.HouseModel;
-using DataAccess.Models.RoomModel;
+﻿using DataAccess.Models.RoomModel;
 using DataAccess.ResultModel;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BussinessObject.Services.RoomServices
 {

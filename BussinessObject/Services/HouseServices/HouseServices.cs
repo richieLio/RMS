@@ -1,23 +1,14 @@
 ﻿using AutoMapper;
 using BussinessObject.Ultilities;
-using DataAccess.Entities;
-using DataAccess.Enums;
-using DataAccess.Models.HouseModel;
-using DataAccess.Repositories.HouseRepository;
-using DataAccess.ResultModel;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Encoder = Business.Ultilities.Encoder;
-using EmailUltilities = Business.Ultilities.Email;
 using Data.Enums;
-using DataAccess.Repositories.UserRepository;
+using DataAccess.Entities;
+using DataAccess.Models.HouseModel;
 using DataAccess.Models.RoomModel;
+using DataAccess.Repositories.HouseRepository;
 using DataAccess.Repositories.RoomRepository;
-using static Org.BouncyCastle.Bcpg.Attr.ImageAttrib;
-using MySqlX.XDevAPI.Common;
+using DataAccess.Repositories.UserRepository;
+using DataAccess.ResultModel;
+using Encoder = Business.Ultilities.Encoder;
 
 
 namespace BussinessObject.Services.HouseServices

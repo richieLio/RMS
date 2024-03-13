@@ -1,6 +1,4 @@
-﻿using System.Linq.Expressions;
-
-namespace DataAccess.Repositories.GenericRepository
+﻿namespace DataAccess.Repositories.GenericRepository
 {
     public interface IRepository<T> where T : class
     {

@@ -4,20 +4,12 @@ using Data.Enums;
 using DataAccess.Entities;
 using DataAccess.Enums;
 using DataAccess.Models.CustomerModel;
-using DataAccess.Models.HouseModel;
 using DataAccess.Models.RoomModel;
-using DataAccess.Models.UserModel;
 using DataAccess.Repositories.ContractRepository;
 using DataAccess.Repositories.HouseRepository;
 using DataAccess.Repositories.RoomRepository;
 using DataAccess.Repositories.UserRepository;
 using DataAccess.ResultModel;
-using System;
-using System.Collections.Generic;
-
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using EmailUltilities = Business.Ultilities.Email;
 using Encoder = Business.Ultilities.Encoder;
 
@@ -113,83 +105,87 @@ namespace BussinessObject.Services.RoomServices
                     result.Message = "User is existed";
                     return result;
                 }
-                // thêm thông tin khách
-
-                var newUser = new User
+                else
                 {
-                    Id = Guid.NewGuid(),
-                    Email = customerCreateReqModel.Email,
-                    PhoneNumber = customerCreateReqModel.PhoneNumber,
-                    Address = customerCreateReqModel.Address,
-                    Gender = customerCreateReqModel.Gender,
-                    Dob = customerCreateReqModel.Dob,
-                    FullName = customerCreateReqModel.FullName,
-                    LicensePlates = customerCreateReqModel.LicensePlates,
-                    Status = GeneralStatus.ACTIVE,
-                    CreatedAt = DateTime.Now,
-                    Role = UserEnum.CUSTOMER,
-                    CitizenIdNumber = customerCreateReqModel.CitizenIdNumber
-                };
+                    // thêm thông tin khách
+
+                    var newUser = new User
+                    {
+                        Id = Guid.NewGuid(),
+                        Email = customerCreateReqModel.Email,
+                        PhoneNumber = customerCreateReqModel.PhoneNumber,
+                        Address = customerCreateReqModel.Address,
+                        Gender = customerCreateReqModel.Gender,
+                        Dob = customerCreateReqModel.Dob,
+                        FullName = customerCreateReqModel.FullName,
+                        LicensePlates = customerCreateReqModel.LicensePlates,
+                        Status = GeneralStatus.ACTIVE,
+                        CreatedAt = DateTime.Now,
+                        Role = UserEnum.CUSTOMER,
+                        CitizenIdNumber = customerCreateReqModel.CitizenIdNumber
+                    };
 
 
-                await _userRepository.Insert(newUser);
+                    await _userRepository.Insert(newUser);
 
-                // thêm khách vào phòng
-                var isAddedToRoom = await _roomRepository.AddUserToRoom(newUser.Id, customerCreateReqModel.RoomId);
-                if (!isAddedToRoom)
-                {
-                    result.IsSuccess = false;
-                    result.Code = 404;
-                    result.Message = "Failed to add customer to room. Room not found or user already exists in the room.";
-                    return result;
+                    // thêm khách vào phòng
+                    var isAddedToRoom = await _roomRepository.AddUserToRoom(newUser.Id, customerCreateReqModel.RoomId);
+                    if (!isAddedToRoom)
+                    {
+                        result.IsSuccess = false;
+                        result.Code = 404;
+                        result.Message = "Failed to add customer to room. Room not found or user already exists in the room.";
+                        return result;
+                    }
+
+                    // thêm hợp đồng
+                    var contract = new Contract
+                    {
+                        Id = Guid.NewGuid(),
+                        OwnerId = userId,
+                        CustomerId = newUser.Id,
+                        RoomId = customerCreateReqModel.RoomId,
+                        StartDate = DateTime.Now,
+                        EndDate = customerCreateReqModel.EndDate,
+                        Status = GeneralStatus.ACTIVE,
+                    };
+                    await _contractRepository.Insert(contract);
+
+                    // sửa số phòng còn trống
+                    house.AvailableRoom = availableRoom - 1;
+                    _ = await _houseRepository.Update(house);
+
+                    //gửi mail mật khẩu cấp 2 cho khách
+
+                    string secondPassword = Generate2ndPassword();
+                    var room = await _roomRepository.Get(customerCreateReqModel.RoomId);
+                    string FilePath = "../BussinessObject/TemplateEmail/Create2ndPassword.html";
+
+                    string Html = File.ReadAllText(FilePath);
+                    Html = Html.Replace("{{2ndPassword}}", secondPassword);
+                    Html = Html.Replace("{{RoomName}}", $"{room.Name}");
+                    Html = Html.Replace("{{HouseAccount}}", $"{house.HouseAccount}");
+                    //  Html = Html.Replace("{{HousePassword}}", $"{house.Password}");
+                    bool emailSent = await EmailUltilities.SendEmail(customerCreateReqModel.Email, "Email Notification", Html);
+
+                    if (!emailSent)
+                    {
+                        // Xử lý trường hợp gửi email không thành công
+                        result.IsSuccess = false;
+                        result.Code = 500;
+                        result.Message = "Email cannot be send.";
+                        return result;
+                    }
+                    //update mật khẩu cấp 2
+                    var HashedPasswordModel = Encoder.CreateHash2ndPassword(secondPassword);
+                    room.SecondPassword = HashedPasswordModel.HashedPassword;
+                    _ = await _roomRepository.Update(room);
+
+
+                    result.IsSuccess = true;
+                    result.Code = 200;
+                    result.Message = "Customer added to room successfully.";
                 }
-
-                // thêm hợp đồng
-                var contract = new Contract
-                {
-                    Id = Guid.NewGuid(),
-                    OwnerId = userId,
-                    CustomerId = newUser.Id,
-                    RoomId = customerCreateReqModel.RoomId,
-                    StartDate = DateTime.Now,
-                    EndDate = customerCreateReqModel.EndDate
-                };
-                await _contractRepository.Insert(contract);
-
-                // sửa số phòng còn trống
-                house.AvailableRoom = availableRoom - 1;
-                _ = await _houseRepository.Update(house);
-
-                //gửi mail mật khẩu cấp 2 cho khách
-
-                string secondPassword = Generate2ndPassword();
-                var room = await _roomRepository.Get(customerCreateReqModel.RoomId);
-                string FilePath = "../BussinessObject/TemplateEmail/Create2ndPassword.html";
-
-                string Html = File.ReadAllText(FilePath);
-                Html = Html.Replace("{{2ndPassword}}", secondPassword);
-                Html = Html.Replace("{{RoomName}}", $"{room.Name}");
-                Html = Html.Replace("{{HouseAccount}}", $"{house.HouseAccount}"); 
-              //  Html = Html.Replace("{{HousePassword}}", $"{house.Password}");
-                bool emailSent = await EmailUltilities.SendEmail(customerCreateReqModel.Email, "Email Notification", Html);
-
-                if (!emailSent)
-                {
-                    // Xử lý trường hợp gửi email không thành công
-                    result.IsSuccess = false;
-                    result.Code = 500;
-                    result.Message = "Email cannot be send.";
-                    return result;
-                }
-                //update mật khẩu cấp 2
-                var HashedPasswordModel = Encoder.CreateHash2ndPassword(secondPassword);
-                room.SecondPassword = HashedPasswordModel.HashedPassword;
-                _ = await _roomRepository.Update(room);
-
-               
-                result.IsSuccess = true;
-                result.Code = 200;
-                result.Message = "Customer added to room successfully.";
             }
             catch (Exception e)
             {
