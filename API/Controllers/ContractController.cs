@@ -1,6 +1,7 @@
 ﻿using BussinessObject.Services.ContractServices;
 using DataAccess.Models.ContractModel;
 using DataAccess.ResultModel;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -77,6 +78,13 @@ namespace API.Controllers
                 return BadRequest("Invalid user ID format");
             }
             ResultModel result = await _contractServices.UpdateContractStatus(Form);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpGet("contract-of-room")]
+        public async Task<IActionResult> GetContractByRoom(Guid roomId)
+        {
+            ResultModel result = await _contractServices.GetContractByRoom(roomId);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
     }
