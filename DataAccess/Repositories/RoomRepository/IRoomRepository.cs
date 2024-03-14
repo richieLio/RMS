@@ -10,7 +10,7 @@ namespace DataAccess.Repositories.RoomRepository
         Task<IEnumerable<Room>> GetRooms(Guid houseId);
         Task<Room?> GetRoomById(Guid roomId);
         public Task<bool> IsCustomerInRoom(Guid customerId, Guid roomId);
-
+        Task<Room> GetRoomByName(string name);
 
     }
 }

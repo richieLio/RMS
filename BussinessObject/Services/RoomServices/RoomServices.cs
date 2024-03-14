@@ -4,6 +4,7 @@ using Data.Enums;
 using DataAccess.Entities;
 using DataAccess.Enums;
 using DataAccess.Models.CustomerModel;
+using DataAccess.Models.HouseModel;
 using DataAccess.Models.RoomModel;
 using DataAccess.Repositories.ContractRepository;
 using DataAccess.Repositories.HouseRepository;
@@ -112,7 +113,14 @@ namespace BussinessObject.Services.RoomServices
                 int? UpdateRoomQuantity = await _houseRepository.GetRoomQuantityByHouseId(roomCreateReqModel.HouseId);
                 var house = await _houseRepository.Get(roomCreateReqModel.HouseId);
                 var user = await _userRepository.GetUserByID(userId);
-
+                var existingRoom = await _roomRepository.GetRoomByName(roomCreateReqModel.Name);
+                if (existingRoom != null)
+                {
+                    Result.IsSuccess = false;
+                    Result.Code = 400;
+                    Result.Message = "House with this name already exists.";
+                    return Result;
+                }
                 if (user == null)
                 {
                     Result.IsSuccess = false;
