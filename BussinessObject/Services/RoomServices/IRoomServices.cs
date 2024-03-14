@@ -5,7 +5,8 @@ namespace BussinessObject.Services.RoomServices
 {
     public interface IRoomServices
     {
-        public Task<ResultModel> AddRangeRoom(RoomCreateReqModel roomCreateReqModel);
+        public Task<ResultModel> AddRangeRoom(Guid userId, RoomCreateRangeReqModel roomCreateReqModel);
+        public Task<ResultModel> AddRoom(Guid userId, RoomCreateReqModel roomCreateReqModel);
         public Task<ResultModel> AddCustomerToRoom(Guid userId, AddCustomerToRoomReqModel addCustomerToRoomReqModel);
         public Task<ResultModel> GetCustomerByRoomId(Guid userId, Guid roomId);
         Task<ResultModel> GetRoomList(int page, Guid userId, Guid houseId);

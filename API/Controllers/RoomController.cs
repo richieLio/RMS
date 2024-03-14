@@ -16,8 +16,8 @@ namespace API.Controllers
             _roomServices = roomServices;
         }
 
-        [HttpPost("add-new")]
-        public async Task<IActionResult> CreateHouse([FromBody] RoomCreateReqModel Form)
+        [HttpPost("add-range")]
+        public async Task<IActionResult> CreateRangeRoom([FromBody] RoomCreateRangeReqModel Form)
         {
             var userIdString = User.FindFirst("userid")?.Value;
             if (string.IsNullOrEmpty(userIdString))
@@ -28,7 +28,22 @@ namespace API.Controllers
             {
                 return BadRequest("Invalid user ID format");
             }
-            ResultModel result = await _roomServices.AddRangeRoom(Form);
+            ResultModel result = await _roomServices.AddRangeRoom(userId, Form);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+        [HttpPost("add")]
+        public async Task<IActionResult> CreateRoom([FromBody] RoomCreateReqModel Form)
+        {
+            var userIdString = User.FindFirst("userid")?.Value;
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                return BadRequest("Unable to retrieve user ID");
+            }
+            if (!Guid.TryParse(userIdString, out Guid userId))
+            {
+                return BadRequest("Invalid user ID format");
+            }
+            ResultModel result = await _roomServices.AddRoom(userId, Form);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 
