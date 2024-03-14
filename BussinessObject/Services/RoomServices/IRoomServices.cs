@@ -8,7 +8,7 @@ namespace BussinessObject.Services.RoomServices
         public Task<ResultModel> AddRangeRoom(RoomCreateReqModel roomCreateReqModel);
         public Task<ResultModel> AddCustomerToRoom(Guid userId, AddCustomerToRoomReqModel addCustomerToRoomReqModel);
         public Task<ResultModel> GetCustomerByRoomId(Guid userId, Guid roomId);
-        Task<ResultModel> GetRoomList(int page);
+        Task<ResultModel> GetRoomList(int page, Guid userId, Guid houseId);
         Task<ResultModel> GetRoomInformation(Guid roomId);
         Task<ResultModel> UpdateRoom(RoomUpdateReqModel roomUpdateReqModel);
         Task<ResultModel> UpdateRoomStatus(RoomUpdateStatusReqModel roomUpdateStatusReqModel);

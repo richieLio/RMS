@@ -9,13 +9,6 @@ namespace DataAccess.Models.HouseModel
 
         public string? Address { get; set; }
 
-        /// <summary>
-        /// Số lượng phòng
-        /// </summary>
-        public int? RoomQuantity { get; set; }
-        [JsonIgnore]
-        public int? AvailableRoom { get; set; }
-
         public string? HouseAccount { get; set; }
 
         public string? Password { get; set; } = null!;
