@@ -53,6 +53,7 @@ namespace BussinessObject.Services.RoomServices
                     Result.IsSuccess = false;
                     Result.Code = 400;
                     Result.Message = "House not found";
+                    return Result;
                 }
 
                 int? RoomQuantity = roomCreateReqModel.Quantity;
@@ -84,6 +85,7 @@ namespace BussinessObject.Services.RoomServices
                     {
                         int newRoomQuantity = UpdateRoomQuantity.Value + RoomQuantity.Value;
                         house.RoomQuantity = newRoomQuantity;
+                        house.AvailableRoom += RoomQuantity.Value;
                         await _houseRepository.Update(house);
                     }
                 }
@@ -144,8 +146,8 @@ namespace BussinessObject.Services.RoomServices
 
                 if (UpdateRoomQuantity.HasValue)
                 {
-                    int newRoomQuantity = UpdateRoomQuantity.Value + 1;
-                    house.RoomQuantity = newRoomQuantity;
+                    house.RoomQuantity += 1;
+                    house.AvailableRoom += 1;
                     await _houseRepository.Update(house);
                 }
 

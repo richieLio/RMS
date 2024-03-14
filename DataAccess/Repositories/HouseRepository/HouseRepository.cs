@@ -38,6 +38,10 @@ namespace DataAccess.Repositories.HouseRepository
             var house = await _context.Houses.FindAsync(houseId);
             return house?.RoomQuantity;
         }
+        public async Task<House> GetHouseByName(string name)
+        {
+            return await _context.Houses.FirstOrDefaultAsync(h => h.Name == name);
+        }
 
     }
 }

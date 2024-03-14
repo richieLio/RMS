@@ -8,6 +8,7 @@ using DataAccess.Repositories.HouseRepository;
 using DataAccess.Repositories.RoomRepository;
 using DataAccess.Repositories.UserRepository;
 using DataAccess.ResultModel;
+using MySqlX.XDevAPI.Common;
 using Encoder = Business.Ultilities.Encoder;
 
 
@@ -30,7 +31,15 @@ namespace BussinessObject.Services.HouseServices
             ResultModel Result = new();
             try
             {
-              
+                var existingHouse = await _houseRepository.GetHouseByName(houseCreateReqModel.Name);
+                if (existingHouse != null)
+                {
+                    Result.IsSuccess = false;
+                    Result.Code = 400;
+                    Result.Message = "House with this name already exists.";
+                    return Result;
+                }
+
                 var config = new MapperConfiguration(cfg =>
                 {
                     cfg.CreateMap<HouseCreateReqModel, House>().ForMember(dest => dest.Password, opt => opt.Ignore()); ;
@@ -47,7 +56,8 @@ namespace BussinessObject.Services.HouseServices
                 NewHouse.OwnerId = ownerId;
                 NewHouse.Password = HashedPasswordModel.HashedPassword;
                 NewHouse.Salt = HashedPasswordModel.Salt;
-                
+                NewHouse.RoomQuantity = 0;
+                NewHouse.AvailableRoom = 0;
                 NewHouse.Status = GeneralStatus.ACTIVE;
                
                 _ = await _houseRepository.Insert(NewHouse);
