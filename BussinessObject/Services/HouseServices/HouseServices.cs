@@ -25,17 +25,15 @@ namespace BussinessObject.Services.HouseServices
             _roomRepository = roomRepository;
         }
 
-        public async Task<ResultModel> AddHouse(Guid ownerId, HouseRoomCreateReqModel houseRoomCreateReqModel)
+        public async Task<ResultModel> AddHouse(Guid ownerId, HouseCreateReqModel houseCreateReqModel)
         {
             ResultModel Result = new();
             try
             {
-                var houseCreateReqModel = houseRoomCreateReqModel.HouseCreateReqModel;
-                var roomCreateReqModel = houseRoomCreateReqModel.RoomCreateReqModel;
+              
                 var config = new MapperConfiguration(cfg =>
                 {
                     cfg.CreateMap<HouseCreateReqModel, House>().ForMember(dest => dest.Password, opt => opt.Ignore()); ;
-                    cfg.CreateMap<RoomCreateReqModel, Room>();
                 });
                 IMapper mapper = config.CreateMapper();
                 House NewHouse = mapper.Map<HouseCreateReqModel, House>(houseCreateReqModel);
@@ -46,50 +44,17 @@ namespace BussinessObject.Services.HouseServices
 
                 var HashedPasswordModel = Encoder.CreateHashPassword(houseCreateReqModel.Password);
 
-
-                var availableRoom = houseCreateReqModel?.AvailableRoom;
-                var roomQuantity = houseCreateReqModel?.RoomQuantity;
-
                 NewHouse.OwnerId = ownerId;
                 NewHouse.Password = HashedPasswordModel.HashedPassword;
                 NewHouse.Salt = HashedPasswordModel.Salt;
-                NewHouse.RoomQuantity = roomQuantity;
-                NewHouse.AvailableRoom = roomQuantity; //set available room == room quantity when user did not add any customer into a room
+                
                 NewHouse.Status = GeneralStatus.ACTIVE;
-                if (availableRoom > roomQuantity)
-                {
-                    Result.IsSuccess = false;
-                    Result.Code = 400;
-                    Result.Message = "Available room must be smaller than room quantity";
-                    return Result;
-                }
+               
                 _ = await _houseRepository.Insert(NewHouse);
                 Result.IsSuccess = true;
                 Result.Code = 200;
                 Result.Data = NewHouse;
                 Result.Message = "House created successfully";
-
-                //auto generate room based on room quantity
-                if (roomQuantity.HasValue && roomQuantity > 0)
-                {
-                    var newRooms = new List<Room>();
-                    for (int i = 0; i < roomQuantity.Value; i++)
-                    {
-                        Room newRoom = mapper.Map<RoomCreateReqModel, Room>(roomCreateReqModel);
-
-
-                        newRoom.HouseId = NewHouse.Id;
-                        newRoom.Name = "A" + i; //default name
-                        newRoom.Status = GeneralStatus.ACTIVE;
-                        newRooms.Add(newRoom);
-                    }
-                    await _roomRepository.AddRange(newRooms);
-                }
-                Result.IsSuccess = true;
-                Result.Code = 200;
-                //tra ve data 
-                Result.Data = NewHouse;
-                Result.Message = "Create House successfully!, Rooms are auto generated with default name, you can rename later!";
             }
 
 

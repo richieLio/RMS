@@ -32,7 +32,7 @@ namespace API.Controllers
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 
-        [HttpPost("add-customer-to-room")]
+        [HttpPost("add-customer")]
         public async Task<IActionResult> AddCusomerToRoom([FromBody] AddCustomerToRoomReqModel Form)
         {
             var userIdString = User.FindFirst("userid")?.Value;
@@ -48,7 +48,7 @@ namespace API.Controllers
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 
-        [HttpGet("customer-in-room-information")]
+        [HttpGet("customer")] // get customer by room(url: https://localhost:7084/api/room/customer
         public async Task<IActionResult> GetCustomerByRoom(Guid roomId)
         {
             var userIdString = User.FindFirst("userid")?.Value;
@@ -65,7 +65,7 @@ namespace API.Controllers
         }
 
         [HttpGet("list")]
-        public async Task<IActionResult> GetRoomList(int page)
+        public async Task<IActionResult> GetRoomList(int page, Guid houseId)
         {
             var userIdString = User.FindFirst("userid")?.Value;
             if (string.IsNullOrEmpty(userIdString))
@@ -76,7 +76,7 @@ namespace API.Controllers
             {
                 return BadRequest("Invalid user ID format");
             }
-            ResultModel result = await _roomServices.GetRoomList(page);
+            ResultModel result = await _roomServices.GetRoomList(page, userId, houseId);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 

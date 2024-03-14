@@ -96,6 +96,13 @@ namespace BussinessObject.Services.RoomServices
                     result.Message = "User not found.";
                     return result;
                 }
+                if (house == null)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 404;
+                    result.Message = "House not found.";
+                    return result;
+                }
                 var check = await _userRepository.CheckIfCustomerIsExisted(customerCreateReqModel.Email, customerCreateReqModel.PhoneNumber,
                     customerCreateReqModel.CitizenIdNumber, customerCreateReqModel.LicensePlates);
                 if (check != null)
@@ -207,6 +214,14 @@ namespace BussinessObject.Services.RoomServices
 
             try
             {
+                var user = _userRepository.Get(userId);
+                if (user == null)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 404;
+                    result.Message = "User not found.";
+                    return result;
+                }
                 var customers = await _roomRepository.GetCustomersByRoomId(roomId);
 
                 var customerModels = customers.Select(c => new CustomerResModel
@@ -248,17 +263,33 @@ namespace BussinessObject.Services.RoomServices
             return result;
         }
 
-        public async Task<ResultModel> GetRoomList(int page)
+        public async Task<ResultModel> GetRoomList(int page, Guid userId, Guid houseId) 
         {
             ResultModel result = new ResultModel();
             try
             {
+                var user = _userRepository.Get(userId);
+                var house = _houseRepository.Get(houseId);
+                if (user == null)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 404;
+                    result.Message = "User not found.";
+                    return result;
+                }
+                if (house == null)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 404;
+                    result.Message = "House not found.";
+                    return result;
+                }
                 if (page == null || page == 0)
                 {
                     page = 1;
                 }
 
-                var rooms = await _roomRepository.GetRooms();
+                var rooms = await _roomRepository.GetRooms(houseId);
                 List<RoomResModel> roomList = new();
                 foreach (var r in rooms)
                 {
