@@ -1,4 +1,5 @@
 ﻿using BussinessObject.Services.HouseServices;
+using DataAccess.Entities;
 using DataAccess.Models.HouseModel;
 using DataAccess.ResultModel;
 using Microsoft.AspNetCore.Mvc;
@@ -33,7 +34,7 @@ namespace API.Controllers
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
         [HttpPost("add-new")]
-        public async Task<IActionResult> CreateHouse([FromBody] HouseRoomCreateReqModel Form)
+        public async Task<IActionResult> CreateHouse([FromBody] HouseCreateReqModel Form)
         {
             var userIdString = User.FindFirst("userid")?.Value;
 

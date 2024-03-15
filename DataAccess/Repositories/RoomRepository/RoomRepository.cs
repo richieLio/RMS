@@ -40,10 +40,13 @@ namespace DataAccess.Repositories.RoomRepository
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<Room>> GetRooms()
+        public async Task<IEnumerable<Room>> GetRooms(Guid houseId)
         {
-            return await _rooms.Where(x => x.Status.Equals(GeneralStatus.ACTIVE)).ToListAsync();
+            return await _rooms
+                .Where(r => r.HouseId == houseId && r.Status == GeneralStatus.ACTIVE)
+                .ToListAsync();
         }
+
 
         public async Task<Room?> GetRoomById(Guid roomId)
         {
