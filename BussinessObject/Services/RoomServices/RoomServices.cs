@@ -150,6 +150,7 @@ namespace BussinessObject.Services.RoomServices
                 await _roomRepository.Insert(newRoom);
                 Result.IsSuccess = true;
                 Result.Code = 200;
+                Result.Data = newRoom;
                 Result.Message = "Create rooms successfully!";
 
                 if (UpdateRoomQuantity.HasValue)

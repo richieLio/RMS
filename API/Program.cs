@@ -18,6 +18,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using Google.Apis.Storage.v1;
+using BussinessObject.Services.FireBaseServices;
+using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -78,8 +81,6 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // Connect Database 
-//builder.Services.AddDbContext<HouseManagementContext>(ServiceLifetime.Transient);
-//builder.Services.AddDbContext<HouseManagementContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("HouseManagement")));
 builder.Services.AddDbContext<HouseManagementContext>(option => option.UseMySQL(builder.Configuration.GetConnectionString("DefaultConnection")), ServiceLifetime.Transient);
 
 
@@ -91,7 +92,8 @@ builder.Services.AddScoped<IRoomServices, RoomServices>();
 builder.Services.AddScoped<IBillServices, BillServices>();
 builder.Services.AddScoped<ICustomerServices, CustomerServices>();
 builder.Services.AddScoped<IContractServices, ContractServices>();
-
+builder.Services.AddScoped<FireBaseServices>(_ =>
+                        new FireBaseServices("firebaseKey.Json"));
 
 //Subcribe repository
 builder.Services.AddTransient<IUserRepository, UserRepository>();
