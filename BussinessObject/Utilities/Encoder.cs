@@ -6,7 +6,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Business.Ultilities
+namespace Business.Utilities
 {
     public class Encoder
     {

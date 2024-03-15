@@ -1,6 +1,6 @@
 ﻿using DataAccess.ResultModel;
 
-namespace BussinessObject.Ultilities
+namespace BussinessObject.Utilities
 {
     public class Pagination
     {

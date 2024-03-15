@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using BussinessObject.Ultilities;
+using BussinessObject.Utilities;
 using Data.Enums;
 using DataAccess.Entities;
 using DataAccess.Enums;
@@ -12,8 +12,8 @@ using DataAccess.Repositories.RoomRepository;
 using DataAccess.Repositories.UserRepository;
 using DataAccess.ResultModel;
 using MySqlX.XDevAPI.Common;
-using EmailUltilities = Business.Ultilities.Email;
-using Encoder = Business.Ultilities.Encoder;
+using EmailUltilities = Business.Utilities.Email;
+using Encoder = Business.Utilities.Encoder;
 
 
 
@@ -301,12 +301,16 @@ namespace BussinessObject.Services.RoomServices
             int otp = rnd.Next(100000, 999999);
             return otp.ToString();
         }
-        public async Task<ResultModel> GetCustomerByRoomId(Guid userId, Guid roomId)
+        public async Task<ResultModel> GetCustomerByRoomId(int page, Guid userId, Guid roomId)
         {
             ResultModel result = new ResultModel();
 
             try
             {
+                if (page == null || page == 0)
+                {
+                    page = 1;
+                }
                 var user = _userRepository.Get(userId);
                 if (user == null)
                 {
@@ -341,9 +345,10 @@ namespace BussinessObject.Services.RoomServices
                 }
                 else
                 {
+                    var ResultList = await Pagination.GetPagination(customers, page, 10);
                     result.IsSuccess = true;
                     result.Code = 200;
-                    result.Data = customerModels;
+                    result.Data = ResultList;
                 }
 
             }

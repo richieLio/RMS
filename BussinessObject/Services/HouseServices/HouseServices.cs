@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using BussinessObject.Ultilities;
+using BussinessObject.Utilities;   
 using Data.Enums;
 using DataAccess.Entities;
 using DataAccess.Models.HouseModel;
@@ -9,7 +9,7 @@ using DataAccess.Repositories.RoomRepository;
 using DataAccess.Repositories.UserRepository;
 using DataAccess.ResultModel;
 using MySqlX.XDevAPI.Common;
-using Encoder = Business.Ultilities.Encoder;
+using Encoder = Business.Utilities.Encoder;
 
 
 namespace BussinessObject.Services.HouseServices

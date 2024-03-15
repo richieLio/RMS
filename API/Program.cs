@@ -19,8 +19,9 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using Google.Apis.Storage.v1;
-using BussinessObject.Services.FireBaseServices;
 using Microsoft.Extensions.DependencyInjection;
+using BussinessObject.Utilities;
+using BussinessObject.Services.CloudStorageServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -92,8 +93,9 @@ builder.Services.AddScoped<IRoomServices, RoomServices>();
 builder.Services.AddScoped<IBillServices, BillServices>();
 builder.Services.AddScoped<ICustomerServices, CustomerServices>();
 builder.Services.AddScoped<IContractServices, ContractServices>();
-builder.Services.AddScoped<FireBaseServices>(_ =>
-                        new FireBaseServices("firebaseKey.Json"));
+builder.Services.AddScoped<CloudStorage>(_ =>
+                        new CloudStorage("firebaseKey.Json"));
+builder.Services.AddScoped<ICloudStorageServices, CloudStorageServices>();
 
 //Subcribe repository
 builder.Services.AddTransient<IUserRepository, UserRepository>();

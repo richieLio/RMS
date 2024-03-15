@@ -7,33 +7,49 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BussinessObject.Services.FireBaseServices
+namespace BussinessObject.Utilities
 {
-
-    public class FireBaseServices : IFireBaseServices
+    public class CloudStorage
     {
         private readonly StorageClient _storage;
         private string bucketName = "fir-3ad0b.appspot.com";
 
 
-        public FireBaseServices(string serviceAccountKeyPath)
+        public CloudStorage(string serviceAccountKeyPath)
         {
             GoogleCredential credential = GoogleCredential.FromFile(serviceAccountKeyPath);
-            _storage =  StorageClient.Create(credential);
+            _storage = StorageClient.Create(credential);
         }
-        public async Task<string> UploadFile(IFormFile file)
+        public async Task<string> UploadFile(IFormFile file, string filePath)
         {
             using (var memoryStream = new MemoryStream())
             {
                 await file.CopyToAsync(memoryStream);
                 memoryStream.Seek(0, SeekOrigin.Begin);
 
-                var objectName = $"{file.FileName}";
+                var objectName = $"{filePath}/{file.FileName}";
 
                 _storage.UploadObject(bucketName, objectName, file.ContentType, memoryStream);
 
                 return $"https://firebasestorage.googleapis.com/v0/b/{bucketName}/o/{objectName}";
             }
         }
+        public async Task<string> DownloadFileFromFirebase(string fileName, string filePath)
+        {
+            using (var memoryStream = new MemoryStream())
+            {
+
+                string objectName = $"{filePath}/{fileName}";
+
+                await _storage.DownloadObjectAsync(bucketName, objectName, memoryStream);
+                memoryStream.Seek(0, SeekOrigin.Begin);
+
+                byte[] fileBytes = memoryStream.ToArray();
+
+
+                return Convert.ToBase64String(fileBytes);
+            }
+        }
+
     }
 }
