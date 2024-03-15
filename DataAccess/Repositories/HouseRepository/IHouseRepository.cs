@@ -10,6 +10,6 @@ namespace DataAccess.Repositories.HouseRepository
         Task<int?> GetRoomQuantityByHouseId(Guid houseId);
 
         Task<int> GetAvailableRoomByHouseId(Guid houseId);
-
+        Task<House> GetHouseByName(string name);
     }
 }

@@ -5,8 +5,8 @@ using DataAccess.Models.EmailModel;
 using DataAccess.Models.UserModel;
 using DataAccess.Repositories.UserRepository;
 using DataAccess.ResultModel;
-using EmailUltilities = Business.Ultilities.Email;
-using Encoder = Business.Ultilities.Encoder;
+using EmailUltilities = Business.Utilities.Email;
+using Encoder = Business.Utilities.Encoder;
 
 namespace BussinessObject.Services.UserServices
 {

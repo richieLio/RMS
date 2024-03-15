@@ -1,9 +1,10 @@
 ﻿using AutoMapper;
-using BussinessObject.Ultilities;
+using BussinessObject.Utilities;
 using Data.Enums;
 using DataAccess.Entities;
 using DataAccess.Enums;
 using DataAccess.Models.CustomerModel;
+using DataAccess.Models.HouseModel;
 using DataAccess.Models.RoomModel;
 using DataAccess.Repositories.ContractRepository;
 using DataAccess.Repositories.HouseRepository;
@@ -11,8 +12,8 @@ using DataAccess.Repositories.RoomRepository;
 using DataAccess.Repositories.UserRepository;
 using DataAccess.ResultModel;
 using MySqlX.XDevAPI.Common;
-using EmailUltilities = Business.Ultilities.Email;
-using Encoder = Business.Ultilities.Encoder;
+using EmailUltilities = Business.Utilities.Email;
+using Encoder = Business.Utilities.Encoder;
 
 
 
@@ -53,6 +54,7 @@ namespace BussinessObject.Services.RoomServices
                     Result.IsSuccess = false;
                     Result.Code = 400;
                     Result.Message = "House not found";
+                    return Result;
                 }
 
                 int? RoomQuantity = roomCreateReqModel.Quantity;
@@ -84,6 +86,7 @@ namespace BussinessObject.Services.RoomServices
                     {
                         int newRoomQuantity = UpdateRoomQuantity.Value + RoomQuantity.Value;
                         house.RoomQuantity = newRoomQuantity;
+                        house.AvailableRoom += RoomQuantity.Value;
                         await _houseRepository.Update(house);
                     }
                 }
@@ -110,7 +113,14 @@ namespace BussinessObject.Services.RoomServices
                 int? UpdateRoomQuantity = await _houseRepository.GetRoomQuantityByHouseId(roomCreateReqModel.HouseId);
                 var house = await _houseRepository.Get(roomCreateReqModel.HouseId);
                 var user = await _userRepository.GetUserByID(userId);
-
+                var existingRoom = await _roomRepository.GetRoomByName(roomCreateReqModel.Name);
+                if (existingRoom != null)
+                {
+                    Result.IsSuccess = false;
+                    Result.Code = 400;
+                    Result.Message = "House with this name already exists.";
+                    return Result;
+                }
                 if (user == null)
                 {
                     Result.IsSuccess = false;
@@ -140,12 +150,13 @@ namespace BussinessObject.Services.RoomServices
                 await _roomRepository.Insert(newRoom);
                 Result.IsSuccess = true;
                 Result.Code = 200;
+                Result.Data = newRoom;
                 Result.Message = "Create rooms successfully!";
 
                 if (UpdateRoomQuantity.HasValue)
                 {
-                    int newRoomQuantity = UpdateRoomQuantity.Value + 1;
-                    house.RoomQuantity = newRoomQuantity;
+                    house.RoomQuantity += 1;
+                    house.AvailableRoom += 1;
                     await _houseRepository.Update(house);
                 }
 
@@ -290,12 +301,16 @@ namespace BussinessObject.Services.RoomServices
             int otp = rnd.Next(100000, 999999);
             return otp.ToString();
         }
-        public async Task<ResultModel> GetCustomerByRoomId(Guid userId, Guid roomId)
+        public async Task<ResultModel> GetCustomerByRoomId(int page, Guid userId, Guid roomId)
         {
             ResultModel result = new ResultModel();
 
             try
             {
+                if (page == null || page == 0)
+                {
+                    page = 1;
+                }
                 var user = _userRepository.Get(userId);
                 if (user == null)
                 {
@@ -330,9 +345,10 @@ namespace BussinessObject.Services.RoomServices
                 }
                 else
                 {
+                    var ResultList = await Pagination.GetPagination(customers, page, 10);
                     result.IsSuccess = true;
                     result.Code = 200;
-                    result.Data = customerModels;
+                    result.Data = ResultList;
                 }
 
             }
