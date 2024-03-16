@@ -1,4 +1,7 @@
-﻿namespace DataAccess.Entities;
+﻿using System;
+using System.Collections.Generic;
+
+namespace DataAccess.Entities;
 
 public partial class Otpverify
 {

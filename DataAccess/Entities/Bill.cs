@@ -1,34 +1,13 @@
-﻿namespace DataAccess.Entities;
+﻿using System;
+using System.Collections.Generic;
+
+namespace DataAccess.Entities;
 
 public partial class Bill
 {
     public Guid Id { get; set; }
 
-    public decimal? RentAmount { get; set; }
-
-    /// <summary>
-    /// Đơn giá điện
-    /// </summary>
-    public decimal? ElectricityUnitPrice { get; set; }
-
-    /// <summary>
-    /// Khối lượng điện đã sử dụng
-    /// </summary>
-    public double? ElectricityUsed { get; set; }
-
-    /// <summary>
-    /// Đơn giá nước
-    /// </summary>
-    public decimal? WaterUnitPrice { get; set; }
-
-    /// <summary>
-    /// Số lượng nước đã sử dụng
-    /// </summary>
-    public double? WaterUsed { get; set; }
-
-    public decimal? ServicePrice { get; set; }
-
-    public decimal? TotalPice { get; set; }
+    public decimal? TotalPrice { get; set; }
 
     public DateTime? Month { get; set; }
 
@@ -39,6 +18,8 @@ public partial class Bill
     public Guid? CreateBy { get; set; }
 
     public Guid? RoomId { get; set; }
+
+    public virtual ICollection<BillService> BillServices { get; set; } = new List<BillService>();
 
     public virtual User? CreateByNavigation { get; set; }
 
