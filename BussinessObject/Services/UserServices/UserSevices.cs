@@ -216,6 +216,7 @@ namespace BussinessObject.Services.UserServices
                 user.Address = updateModel.Address;
                 user.Gender = updateModel.Gender;
                 user.FullName = updateModel.FullName;
+                user.Dob = updateModel.Dob;
 
 
                 _ = await _userRepository.Update(user);
