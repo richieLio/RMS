@@ -96,20 +96,31 @@ namespace BussinessObject.Services.CustomerServices
                     Result.Message = "Not found";
                     return Result;
                 }
+                var userToUpdate = await _userRepository.Get(customerUpdateModel.Id);
 
-                
-                user.Email = customerUpdateModel.Email;
-                user.PhoneNumber = customerUpdateModel.PhoneNumber;
-                user.Address = customerUpdateModel.Address;
-                user.Gender = customerUpdateModel.Gender;
-                user.Dob = customerUpdateModel.Dob;
-                user.FullName = customerUpdateModel.FullName;
-                user.LicensePlates = customerUpdateModel.LicensePlates;
-                user.Status = customerUpdateModel.Status;
+                if (userToUpdate == null)
+                {
+                    Result.IsSuccess = false;
+                    Result.Code = 400;
+                    Result.Message = "Customer not found";
+                    return Result;
+                }
+
+
+
+                userToUpdate.Email = customerUpdateModel.Email;
+                userToUpdate.PhoneNumber = customerUpdateModel.PhoneNumber;
+                userToUpdate.Address = customerUpdateModel.Address;
+                userToUpdate.Gender = customerUpdateModel.Gender;
+                userToUpdate.Dob = customerUpdateModel.Dob;
+                userToUpdate.FullName = customerUpdateModel.FullName;
+                userToUpdate.LicensePlates = customerUpdateModel.LicensePlates;
+                userToUpdate.Status = customerUpdateModel.Status;
 
                 _ = await _userRepository.Update(user);
                 Result.IsSuccess = true;
                 Result.Code = 200;
+                Result.Data = user;
                 Result.Message = "Profile updated successfully";
             }
             catch (Exception ex)
