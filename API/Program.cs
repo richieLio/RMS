@@ -22,6 +22,7 @@ using Google.Apis.Storage.v1;
 using Microsoft.Extensions.DependencyInjection;
 using BussinessObject.Utilities;
 using BussinessObject.Services.CloudStorageServices;
+using DataAccess.Repositories.ServiceRepository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -105,6 +106,7 @@ builder.Services.AddTransient<IRoomRepository, RoomRepository>();
 builder.Services.AddTransient<IContractRepository, ContractRepository>();
 builder.Services.AddTransient<IBillRepository, BillRepository>();
 builder.Services.AddTransient<ICustomerRepository, CustomerRepository>();
+builder.Services.AddTransient<IServiceRepository, ServiceRepository>();
 
 //Add CORS
 builder.Services.AddCors(options =>

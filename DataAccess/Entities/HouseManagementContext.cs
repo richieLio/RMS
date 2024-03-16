@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 
 namespace DataAccess.Entities;
 
@@ -11,6 +13,8 @@ public partial class HouseManagementContext : DbContext
 
     public virtual DbSet<Bill> Bills { get; set; }
 
+    public virtual DbSet<BillService> BillServices { get; set; }
+
     public virtual DbSet<Contract> Contracts { get; set; }
 
     public virtual DbSet<House> Houses { get; set; }
@@ -22,6 +26,8 @@ public partial class HouseManagementContext : DbContext
     public virtual DbSet<Payment> Payments { get; set; }
 
     public virtual DbSet<Room> Rooms { get; set; }
+
+    public virtual DbSet<Service> Services { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
 
@@ -37,19 +43,9 @@ public partial class HouseManagementContext : DbContext
 
             entity.HasIndex(e => e.CreateBy, "FK_Bill_User");
 
-            entity.Property(e => e.ElectricityUnitPrice)
-                .HasPrecision(19, 4)
-                .HasComment("Đơn giá điện");
-            entity.Property(e => e.ElectricityUsed).HasComment("Khối lượng điện đã sử dụng");
             entity.Property(e => e.Month).HasMaxLength(6);
             entity.Property(e => e.PaymentDate).HasMaxLength(6);
-            entity.Property(e => e.RentAmount).HasPrecision(19, 4);
-            entity.Property(e => e.ServicePrice).HasPrecision(19, 4);
-            entity.Property(e => e.TotalPice).HasPrecision(19, 4);
-            entity.Property(e => e.WaterUnitPrice)
-                .HasPrecision(19, 4)
-                .HasComment("Đơn giá nước");
-            entity.Property(e => e.WaterUsed).HasComment("Số lượng nước đã sử dụng");
+            entity.Property(e => e.TotalPrice).HasPrecision(19, 4);
 
             entity.HasOne(d => d.CreateByNavigation).WithMany(p => p.Bills)
                 .HasForeignKey(d => d.CreateBy)
@@ -58,6 +54,27 @@ public partial class HouseManagementContext : DbContext
             entity.HasOne(d => d.Room).WithMany(p => p.Bills)
                 .HasForeignKey(d => d.RoomId)
                 .HasConstraintName("FK_Bill_Room");
+        });
+
+        modelBuilder.Entity<BillService>(entity =>
+        {
+            entity.HasKey(e => new { e.BillId, e.ServiceId }).HasName("PRIMARY");
+
+            entity.ToTable("BillService");
+
+            entity.HasIndex(e => e.ServiceId, "ServiceId");
+
+            entity.Property(e => e.Quantity).HasPrecision(10);
+
+            entity.HasOne(d => d.Bill).WithMany(p => p.BillServices)
+                .HasForeignKey(d => d.BillId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("BillService_ibfk_1");
+
+            entity.HasOne(d => d.Service).WithMany(p => p.BillServices)
+                .HasForeignKey(d => d.ServiceId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("BillService_ibfk_2");
         });
 
         modelBuilder.Entity<Contract>(entity =>
@@ -182,6 +199,16 @@ public partial class HouseManagementContext : DbContext
             entity.HasOne(d => d.House).WithMany(p => p.Rooms)
                 .HasForeignKey(d => d.HouseId)
                 .HasConstraintName("FK_Room_House");
+        });
+
+        modelBuilder.Entity<Service>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
+            entity.ToTable("Service");
+
+            entity.Property(e => e.Name).HasMaxLength(150);
+            entity.Property(e => e.Price).HasPrecision(19, 4);
         });
 
         modelBuilder.Entity<User>(entity =>
