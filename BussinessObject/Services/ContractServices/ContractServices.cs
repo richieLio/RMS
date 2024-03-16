@@ -46,7 +46,7 @@ namespace BussinessObject.Services.ContractServices
                     page = 1;
                 }
 
-                var Contracts = await _contractRepository.GetContracts();
+                var Contracts = await _contractRepository.GetContractsByOwnerId(userId);
                 List<ContractResModel> contractList = new();
                 foreach (var c in Contracts)
                 {
@@ -87,7 +87,7 @@ namespace BussinessObject.Services.ContractServices
             try
             {
                 var user = _userRepository.Get(userId); 
-                var Contracts = await _contractRepository.GetContractById(contractId);
+                var Contracts = await _contractRepository.GetContractById(userId, contractId);
                 var OwnerContractDetails = await _userRepository.GetUserByID(Contracts.OwnerId);
                 var Customers = await _customerRepository.GetCustomerByUserId(Contracts.CustomerId);
                 var Rooms = await _roomRepository.GetRoomById((Guid)Contracts.RoomId);
@@ -186,7 +186,7 @@ namespace BussinessObject.Services.ContractServices
                 Contract.ImagesUrl = filePath;
               
 
-                _ = await _contractRepository.Update(Contract);
+                _ = await _contractRepository.UpdateByOwnerId(userId, Contract);
                 result.IsSuccess = true;
                 result.Code = 200;
                 result.Data = Contract;
@@ -214,7 +214,7 @@ namespace BussinessObject.Services.ContractServices
                     result.Message = "User not found";
                     return result;
                 }
-                var Contract = await _contractRepository.GetContractById(contractUpdateStatusReqModel.Id);
+                var Contract = await _contractRepository.GetContractById(userId, contractUpdateStatusReqModel.Id);
                 if (Contract == null)
                 {
                     result.IsSuccess = false;
@@ -253,7 +253,7 @@ namespace BussinessObject.Services.ContractServices
                     result.Message = "User not found";
                     return result;
                 }
-                var Contracts = await _contractRepository.GetContractByRoomId(roomId);
+                var Contracts = await _contractRepository.GetContractByRoomId(userId, roomId);
                 List<ContractOfRoomModel> contractOfRoomList = new();
                 foreach (var c in Contracts)
                 {

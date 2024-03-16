@@ -23,7 +23,7 @@ namespace API.Controllers
             _cloudStorage = cloudStorage;
         }
 
-        [HttpGet("list")]
+        [HttpGet("list")] // fixed (only display contracts belong to that userid(owner)) 
         public async Task<IActionResult> GetContractList(int page)
         {
             var userIdString = User.FindFirst("userid")?.Value;
@@ -39,8 +39,8 @@ namespace API.Controllers
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 
-        [HttpGet("information")]
-        public async Task<IActionResult> GetRoomInformation(Guid contractId)
+        [HttpGet("information")] // fixed
+        public async Task<IActionResult> GetContractInformation(Guid contractId)
         {
             var userIdString = User.FindFirst("userid")?.Value;
             if (string.IsNullOrEmpty(userIdString))
@@ -55,23 +55,9 @@ namespace API.Controllers
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 
-      /*  [HttpPut("update")]
-        public async Task<IActionResult> Update([FromBody] ContractReqModel Form)
-        {
-            var userIdString = User.FindFirst("userid")?.Value;
-            if (string.IsNullOrEmpty(userIdString))
-            {
-                return BadRequest("Unable to retrieve user ID");
-            }
-            if (!Guid.TryParse(userIdString, out Guid userId))
-            {
-                return BadRequest("Invalid user ID format");
-            }
-            ResultModel result = await _contractServices.UpdateContract(userId, Form);
-            return result.IsSuccess ? Ok(result) : BadRequest(result);
-        }*/
+      
 
-        [HttpPut("update-status")]
+        [HttpPut("update-status")] //fixed
         public async Task<IActionResult> Update([FromBody] ContractUpdateStatusReqModel Form)
         {
             var userIdString = User.FindFirst("userid")?.Value;
@@ -87,7 +73,7 @@ namespace API.Controllers
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 
-        [HttpGet("contract-of-room")]
+        [HttpGet("contract-of-room")] // fixed
         public async Task<IActionResult> GetContractByRoom(Guid roomId)
         {
             var userIdString = User.FindFirst("userid")?.Value;
@@ -102,7 +88,7 @@ namespace API.Controllers
             ResultModel result = await _contractServices.GetContractByRoom(userId, roomId);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
-        [HttpPut("file")]
+        [HttpPut("file-upload")]  // fixed
         public async Task<IActionResult> UploadFile([FromForm] ContractReqModel Form)
         {
             var userIdString = User.FindFirst("userid")?.Value;
