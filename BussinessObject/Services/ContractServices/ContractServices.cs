@@ -216,11 +216,10 @@ namespace BussinessObject.Services.ContractServices
                     return result;
                 }
 
-                Contract.EndDate = contractReqModel.EndDate;
                 Contract.ImagesUrl = filePath;
               
 
-                _ = await _contractRepository.UpdateByOwnerId(userId, Contract);
+                _ = await _contractRepository.Update(Contract);
                 result.IsSuccess = true;
                 result.Code = 200;
                 result.Data = Contract;
