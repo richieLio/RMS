@@ -34,7 +34,7 @@ namespace DataAccess.Repositories.ContractRepository
 
         public async Task<Contract> UpdateByOwnerId(Guid ownerId, Contract contract)
         {
-            return  = await _context.Contracts.FirstOrDefaultAsync(c => c.OwnerId == ownerId && c.Id == contract.Id);
+            return await _context.Contracts.FirstOrDefaultAsync(c => c.OwnerId == ownerId && c.Id == contract.Id);
         }
     }
 }
