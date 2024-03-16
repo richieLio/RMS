@@ -6,8 +6,6 @@ namespace DataAccess.Models.ContractModel
     {
         public Guid Id { get; set; }
 
-        public DateTime? EndDate { get; set; }
-
         public IFormFile ImagesUrl { get; set; }
 
     }

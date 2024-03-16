@@ -88,7 +88,7 @@ namespace API.Controllers
             ResultModel result = await _contractServices.GetContractByRoom(userId, roomId);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
-        [HttpPut("file-upload")]  // fixed
+        [HttpPut("update")]  // fixed
         public async Task<IActionResult> UploadFile([FromForm] ContractReqModel Form)
         {
             var userIdString = User.FindFirst("userid")?.Value;

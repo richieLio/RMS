@@ -36,5 +36,5 @@ namespace DataAccess.Repositories.ContractRepository
         {
             return await _context.Contracts.FirstOrDefaultAsync(c => c.OwnerId == ownerId && c.Id == contract.Id);
         }
-    }
+    }   
 }
