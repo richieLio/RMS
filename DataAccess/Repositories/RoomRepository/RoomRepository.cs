@@ -48,7 +48,7 @@ namespace DataAccess.Repositories.RoomRepository
         }
 
 
-        public async Task<Room?> GetRoomById(Guid roomId)
+        public async Task<Room?> GetRoomById(Guid? roomId)
         {
             return await _rooms
                 .FirstOrDefaultAsync(r => r.Id == roomId);
