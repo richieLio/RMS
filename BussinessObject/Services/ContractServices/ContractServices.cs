@@ -237,11 +237,12 @@ namespace BussinessObject.Services.ContractServices
 
         public async Task<(string filePath, string fileName)> DownloadFile(Guid userId, Guid contractId)
         {
-            var user = await _userRepository.Get(userId);
-            var contract = await _contractRepository.Get(contractId);
+
+
+            var contract = await _contractRepository.GetContractById(userId, contractId);
             string filePath = contract.ImagesUrl;
             string fileName = Path.GetFileName(filePath);
-          
+
             return (filePath, fileName);
         }
 
