@@ -1,5 +1,4 @@
-﻿using BussinessObject.Services.CloudStorageServices;
-using BussinessObject.Services.ContractServices;
+﻿using BussinessObject.Services.ContractServices;
 using BussinessObject.Utilities;
 using DataAccess.Entities;
 using DataAccess.Models.ContractModel;
@@ -14,12 +13,10 @@ namespace API.Controllers
     public class ContractController : ControllerBase
     {
         private readonly IContractServices _contractServices;
-        private readonly ICloudStorageServices _cloudStorageServices;
         private readonly CloudStorage _cloudStorage;
-        public ContractController(IContractServices contractServices, ICloudStorageServices cloudStorageServices, CloudStorage cloudStorage)
+        public ContractController(IContractServices contractServices, CloudStorage cloudStorage)
         {
             _contractServices = contractServices;
-            _cloudStorageServices = cloudStorageServices;
             _cloudStorage = cloudStorage;
         }
 
@@ -51,11 +48,11 @@ namespace API.Controllers
             {
                 return BadRequest("Invalid user ID format");
             }
-            ResultModel result = await _contractServices.GetContractInformation(userId,contractId);
+            ResultModel result = await _contractServices.GetContractInformation(userId, contractId);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 
-      
+
 
         [HttpPut("update-status")] //fixed
         public async Task<IActionResult> Update([FromBody] ContractUpdateStatusReqModel Form)
@@ -103,12 +100,29 @@ namespace API.Controllers
 
             string filePath = $"Contract/{Form.Id}/images/{Form.ImagesUrl.FileName}";
             await _cloudStorage.UploadFile(Form.ImagesUrl, filePath);
-            
+
             ResultModel result = await _contractServices.UpdateContract(userId, Form, filePath);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 
+        [HttpGet("download")]
+        public async Task<IActionResult> DownloadFile(Guid contractId)
+        {
+            var userIdString = User.FindFirst("userid")?.Value;
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                return BadRequest("Unable to retrieve user ID");
+            }
+            if (!Guid.TryParse(userIdString, out Guid userId))
+            {
+                return BadRequest("Invalid user ID format");
+            }
 
+            var fileDetail = await _contractServices.DownloadFile(userId, contractId);
 
+            var fileBytes = await _cloudStorage.DownloadFileFromFirebase(fileDetail.filePath, fileDetail.fileName);
+
+            return File(fileBytes, "application/octet-stream", fileDetail.fileName);
+        }
     }
 }

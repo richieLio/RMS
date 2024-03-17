@@ -12,7 +12,7 @@ namespace BussinessObject.Services.ContractServices
         Task<ResultModel> UpdateContractStatus(Guid userId, ContractUpdateStatusReqModel contractUpdateStatusReqModel);
         Task<ResultModel> GetContractByRoom(Guid userId, Guid roomId);
 
-       
+        Task<(string filePath, string fileName)> DownloadFile(Guid userId, Guid contractId);
 
 
     }

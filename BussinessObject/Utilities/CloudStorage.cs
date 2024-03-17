@@ -34,22 +34,18 @@ namespace BussinessObject.Utilities
                 return $"https://firebasestorage.googleapis.com/v0/b/{bucketName}/o/{objectName}";
             }
         }
-        public async Task<string> DownloadFileFromFirebase(string fileName, string filePath)
+        public async Task<byte[]> DownloadFileFromFirebase(string filePath, string fileName)
         {
             using (var memoryStream = new MemoryStream())
             {
-
                 string objectName = $"{filePath}/{fileName}";
-
                 await _storage.DownloadObjectAsync(bucketName, objectName, memoryStream);
                 memoryStream.Seek(0, SeekOrigin.Begin);
 
-                byte[] fileBytes = memoryStream.ToArray();
-
-
-                return Convert.ToBase64String(fileBytes);
+                return memoryStream.ToArray();
             }
         }
+
 
     }
 }
