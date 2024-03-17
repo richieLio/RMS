@@ -21,7 +21,6 @@ using System.Text;
 using Google.Apis.Storage.v1;
 using Microsoft.Extensions.DependencyInjection;
 using BussinessObject.Utilities;
-using BussinessObject.Services.CloudStorageServices;
 using DataAccess.Repositories.ServiceRepository;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -96,7 +95,6 @@ builder.Services.AddScoped<ICustomerServices, CustomerServices>();
 builder.Services.AddScoped<IContractServices, ContractServices>();
 builder.Services.AddScoped<CloudStorage>(_ =>
                         new CloudStorage("firebaseKey.Json"));
-builder.Services.AddScoped<ICloudStorageServices, CloudStorageServices>();
 
 //Subcribe repository
 builder.Services.AddTransient<IUserRepository, UserRepository>();

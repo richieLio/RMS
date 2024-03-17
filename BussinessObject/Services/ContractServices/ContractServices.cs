@@ -19,7 +19,7 @@ namespace BussinessObject.Services.ContractServices
         private readonly IRoomRepository _roomRepository;
         private readonly CloudStorage _cloudStorage;
 
-        public ContractServices(CloudStorage cloudStorage,IContractRepository contractRepository, IUserRepository userRepository, ICustomerRepository customerRepository, IRoomRepository roomRepository)
+        public ContractServices(CloudStorage cloudStorage, IContractRepository contractRepository, IUserRepository userRepository, ICustomerRepository customerRepository, IRoomRepository roomRepository)
         {
             _contractRepository = contractRepository;
             _userRepository = userRepository;
@@ -120,7 +120,7 @@ namespace BussinessObject.Services.ContractServices
             try
             {
 
-                var user = _userRepository.Get(userId); 
+                var user = _userRepository.Get(userId);
                 var Contracts = await _contractRepository.GetContractById(userId, contractId);
                 var OwnerContractDetails = await _userRepository.GetUserByID(Contracts.OwnerId);
                 var Customers = await _customerRepository.GetCustomerByUserId(Contracts.CustomerId);
@@ -217,7 +217,7 @@ namespace BussinessObject.Services.ContractServices
                 }
 
                 Contract.ImagesUrl = filePath;
-              
+
 
                 _ = await _contractRepository.Update(Contract);
                 result.IsSuccess = true;
@@ -233,6 +233,19 @@ namespace BussinessObject.Services.ContractServices
             }
             return result;
         }
+
+
+        public async Task<(string filePath, string fileName)> DownloadFile(Guid userId, Guid contractId)
+        {
+            var user = await _userRepository.Get(userId);
+            var contract = await _contractRepository.Get(contractId);
+            string filePath = contract.ImagesUrl;
+            string fileName = Path.GetFileName(filePath);
+          
+            return (filePath, fileName);
+        }
+
+
 
         public async Task<ResultModel> UpdateContractStatus(Guid userId, ContractUpdateStatusReqModel contractUpdateStatusReqModel)
         {
@@ -332,6 +345,6 @@ namespace BussinessObject.Services.ContractServices
             return result;
         }
 
-        
+
     }
 }
