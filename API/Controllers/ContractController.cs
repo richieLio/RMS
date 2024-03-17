@@ -105,7 +105,7 @@ namespace API.Controllers
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 
-        [HttpGet("download")]
+        [HttpGet("download/{contractId}")]
         public async Task<IActionResult> DownloadFile(Guid contractId)
         {
             var userIdString = User.FindFirst("userid")?.Value;
@@ -117,7 +117,6 @@ namespace API.Controllers
             {
                 return BadRequest("Invalid user ID format");
             }
-
             var fileDetail = await _contractServices.DownloadFile(userId, contractId);
 
             var fileBytes = await _cloudStorage.DownloadFileFromFirebase(fileDetail.filePath, fileDetail.fileName);
