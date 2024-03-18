@@ -10,6 +10,6 @@ namespace DataAccess.Repositories.ServiceFeeRepository
 {
     public interface IServiceFeeRepository : IRepository<Service>
     {
-        public Task<IEnumerable<Service>> GetAllServices();
+        public Task<IEnumerable<Service>> GetAllServices(Guid userId);
     }
 }

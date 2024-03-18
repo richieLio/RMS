@@ -9,5 +9,6 @@ namespace BussinessObject.Services.CustomerServices
 
         Task<ResultModel> VerifySecondPass(string token, SecondPassVerificationReqModel secondPassVerificationModel);
         Task<ResultModel> UpdateUserProfile(Guid userId, CustomerUpdateModel customerUpdateModel);
+        Task<ResultModel> GetCustomerProfile(Guid userId, Guid customerId);
     }
 }

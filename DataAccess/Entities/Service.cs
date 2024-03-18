@@ -11,5 +11,9 @@ public partial class Service
 
     public decimal? Price { get; set; }
 
+    public Guid? CreatedBy { get; set; }
+
     public virtual ICollection<BillService> BillServices { get; set; } = new List<BillService>();
+
+    public virtual User? CreatedByNavigation { get; set; }
 }

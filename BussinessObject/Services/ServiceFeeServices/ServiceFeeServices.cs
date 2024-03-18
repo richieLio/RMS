@@ -7,6 +7,7 @@ using DataAccess.Models.ServiceModel;
 using DataAccess.Repositories.ServiceFeeRepository;
 using DataAccess.Repositories.UserRepository;
 using DataAccess.ResultModel;
+using Google.Api.Gax;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -55,7 +56,7 @@ namespace BussinessObject.Services.ServiceFeeServices
 
                 newService.Name = serviceReqModel.Name;
                 newService.Price = serviceReqModel.Price;
-
+                newService.CreatedBy = user.Id;
 
 
                 await _serviceFeeRepository.Insert(newService);
@@ -94,7 +95,7 @@ namespace BussinessObject.Services.ServiceFeeServices
                 {
                     page = 1;
                 }
-                var services = await _serviceFeeRepository.GetAllServices();
+                var services = await _serviceFeeRepository.GetAllServices(userId);
                 List<ServiceResModel> servicesList = new();
                 foreach (var service in services)
                 {
@@ -113,6 +114,47 @@ namespace BussinessObject.Services.ServiceFeeServices
                 result.IsSuccess = true;
                 result.Code = 200;
                 result.Data = paginatedResult;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.IsSuccess = false;
+                result.Code = 404;
+                result.Message = ex.Message;
+                return result;
+            }
+        }
+
+        public async Task<ResultModel> GetServicesList(Guid userId)
+        {
+            ResultModel result = new ResultModel();
+            try
+            {
+                var user = await _userRepository.Get(userId);
+                if (user == null)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 404;
+                    result.Message = "User not found";
+                    return result;
+                }
+
+                var services = await _serviceFeeRepository.GetAllServices(userId);
+                List<ServiceResModel> servicesList = new();
+                foreach (var service in services)
+                {
+                    ServiceResModel sr = new()
+                    {
+                        Id = service.Id,
+                        Name = service.Name,
+                        Price = service.Price,
+                    };
+                    servicesList.Add(sr);
+                }
+
+                result.IsSuccess = true;
+                result.Code = 200;
+                result.Data = servicesList;
                 return result;
             }
             catch (Exception ex)
