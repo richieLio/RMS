@@ -50,5 +50,21 @@ namespace API.Controllers
             ResultModel result = await _customerServices.UpdateUserProfile(userId,updateModel);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
+
+        [HttpGet("profile")]
+        public async Task<IActionResult> GetUserProfile(Guid customerId)
+        {
+            var userIdString = User.FindFirst("userid")?.Value;
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                return BadRequest("Unable to retrieve user ID");
+            }
+            if (!Guid.TryParse(userIdString, out Guid userId))
+            {
+                return BadRequest("Invalid user ID format");
+            }
+            ResultModel result = await _customerServices.GetCustomerProfile(userId, customerId);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
     }
 }

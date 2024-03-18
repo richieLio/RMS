@@ -17,9 +17,9 @@ namespace DataAccess.Repositories.ServiceFeeRepository
             _context = context;
         }
 
-        public async Task<IEnumerable<Service>> GetAllServices()
+        public async Task<IEnumerable<Service>> GetAllServices(Guid userId)
         {
-            return await _context.Services.ToListAsync();
+            return await _context.Services.Where(s=> s.CreatedBy == userId).ToListAsync();
         }
     }
 }

@@ -34,6 +34,22 @@ namespace API.Controllers
             return result.IsSuccess ? Ok(result) : BadRequest(result);
 
         }
+        [HttpGet("get-all")]
+        public async Task<IActionResult> GetAllService()
+        {
+            var userIdString = User.FindFirst("userid")?.Value;
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                return BadRequest("Unable to retrieve user ID");
+            }
+            if (!Guid.TryParse(userIdString, out Guid userId))
+            {
+                return BadRequest("Invalid user ID format");
+            }
+            ResultModel result = await _serviceFeeServices.GetServicesList(userId);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+
+        }
         [HttpPost("add-new")]
         public async Task<IActionResult> AddNewService(ServiceCreateReqModel service)
         {

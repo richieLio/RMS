@@ -207,8 +207,14 @@ public partial class HouseManagementContext : DbContext
 
             entity.ToTable("Service");
 
+            entity.HasIndex(e => e.CreatedBy, "FK_Service_User_idx");
+
             entity.Property(e => e.Name).HasMaxLength(150);
             entity.Property(e => e.Price).HasPrecision(19, 4);
+
+            entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.Services)
+                .HasForeignKey(d => d.CreatedBy)
+                .HasConstraintName("FK_Service_User");
         });
 
         modelBuilder.Entity<User>(entity =>

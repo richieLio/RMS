@@ -41,5 +41,9 @@ namespace DataAccess.Repositories.BillRepository
             return true;
         }
 
+        public async Task<IEnumerable<Bill>> GetBillsByUserId(Guid userId)
+        {
+            return await _context.Bills.Where(b => b.CreateBy == userId).ToListAsync();
+        }
     }
 }

@@ -27,7 +27,47 @@ namespace BussinessObject.Services.CustomerServices
             _userRepository = userRepository;
         }
 
+        public async Task<ResultModel> GetCustomerProfile(Guid userId, Guid customerId)
+        {
+            ResultModel Result = new();
+            try
+            {
+                var user = await _userRepository.Get(customerId);
 
+                if (user == null)
+                {
+                    Result.IsSuccess = false;
+                    Result.Code = 400;
+                    Result.Message = "Not found";
+                    return Result;
+                }
+
+
+                var userProfile = new
+                {
+                    user.Id,
+                    user.FullName,
+                    user.Email,
+                    user.PhoneNumber,
+                    user.Address,
+                    user.Gender,
+                    user.Dob,
+                    user.LicensePlates,
+                    user.CitizenIdNumber,
+                };
+
+                Result.IsSuccess = true;
+                Result.Code = 200;
+                Result.Data = userProfile;
+            }
+            catch (Exception e)
+            {
+                Result.IsSuccess = false;
+                Result.Code = 400;
+                Result.ResponseFailed = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+            }
+            return Result;
+        }
 
         public async Task<ResultModel> Login(CustomerLoginReqModel LoginForm)
         {
