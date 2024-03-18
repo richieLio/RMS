@@ -6,9 +6,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DataAccess.Repositories.ServiceRepository
+namespace DataAccess.Repositories.ServiceFeeRepository
 {
-    public interface IServiceRepository : IRepository<Service>
+    public interface IServiceFeeRepository : IRepository<Service>
     {
+        public Task<IEnumerable<Service>> GetAllServices();
     }
 }

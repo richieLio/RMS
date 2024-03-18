@@ -242,7 +242,6 @@ namespace BussinessObject.Services.ContractServices
             var contract = await _contractRepository.GetContractById(userId, contractId);
             string filePath = contract.ImagesUrl;
             string fileName = Path.GetFileName(filePath);
-
             return (filePath, fileName);
         }
 

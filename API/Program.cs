@@ -18,10 +18,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
-using Google.Apis.Storage.v1;
-using Microsoft.Extensions.DependencyInjection;
 using BussinessObject.Utilities;
-using DataAccess.Repositories.ServiceRepository;
+using BussinessObject.Services.ServiceFeeServices;
+using DataAccess.Repositories.ServiceFeeRepository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -93,6 +92,7 @@ builder.Services.AddScoped<IRoomServices, RoomServices>();
 builder.Services.AddScoped<IBillServices, BillServices>();
 builder.Services.AddScoped<ICustomerServices, CustomerServices>();
 builder.Services.AddScoped<IContractServices, ContractServices>();
+builder.Services.AddScoped<IServiceFeeServices, ServiceFeeServices>();
 builder.Services.AddScoped<CloudStorage>(_ =>
                         new CloudStorage("firebaseKey.Json"));
 
@@ -104,7 +104,7 @@ builder.Services.AddTransient<IRoomRepository, RoomRepository>();
 builder.Services.AddTransient<IContractRepository, ContractRepository>();
 builder.Services.AddTransient<IBillRepository, BillRepository>();
 builder.Services.AddTransient<ICustomerRepository, CustomerRepository>();
-builder.Services.AddTransient<IServiceRepository, ServiceRepository>();
+builder.Services.AddTransient<IServiceFeeRepository, ServiceFeeRepository>();
 
 //Add CORS
 builder.Services.AddCors(options =>
