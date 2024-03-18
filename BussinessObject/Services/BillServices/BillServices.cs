@@ -2,7 +2,6 @@
 using DataAccess.Entities;
 using DataAccess.Models.BillModel;
 using DataAccess.Repositories.BillRepository;
-using DataAccess.Repositories.ServiceRepository;
 using DataAccess.Repositories.UserRepository;
 using DataAccess.ResultModel;
 using MySqlX.XDevAPI.Common;
@@ -12,12 +11,10 @@ namespace BussinessObject.Services.BillServices
     public class BillServices : IBillServices
     {
         private readonly IBillRepository _billRepository;
-        private readonly IServiceRepository _serviceRepository;
         private readonly IUserRepository _userRepository;
-        public BillServices(IBillRepository billRepository, IServiceRepository serviceRepository, IUserRepository userRepository)
+        public BillServices(IBillRepository billRepository, IUserRepository userRepository)
         {
             _billRepository = billRepository;
-            _serviceRepository = serviceRepository;
             _userRepository = userRepository;
         }
         public async Task<ResultModel> CreateBill(Guid userId, BillCreateReqModel billCreateReqModel)
