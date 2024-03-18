@@ -1,4 +1,4 @@
-﻿using BussinessObject.Ultilities;
+﻿using BussinessObject.Utilities;
 using DataAccess.Entities;
 using DataAccess.Models.ContractModel;
 using DataAccess.Repositories.ContractRepository;
@@ -6,6 +6,7 @@ using DataAccess.Repositories.CustomerRepository;
 using DataAccess.Repositories.RoomRepository;
 using DataAccess.Repositories.UserRepository;
 using DataAccess.ResultModel;
+using Microsoft.AspNetCore.Http;
 using System.Diagnostics.Contracts;
 
 namespace BussinessObject.Services.ContractServices
@@ -16,50 +17,91 @@ namespace BussinessObject.Services.ContractServices
         private readonly IUserRepository _userRepository;
         private readonly ICustomerRepository _customerRepository;
         private readonly IRoomRepository _roomRepository;
+        private readonly CloudStorage _cloudStorage;
 
-        public ContractServices(IContractRepository contractRepository, IUserRepository userRepository, ICustomerRepository customerRepository, IRoomRepository roomRepository)
+        public ContractServices(CloudStorage cloudStorage, IContractRepository contractRepository, IUserRepository userRepository, ICustomerRepository customerRepository, IRoomRepository roomRepository)
         {
             _contractRepository = contractRepository;
             _userRepository = userRepository;
             _customerRepository = customerRepository;
             _roomRepository = roomRepository;
+            _cloudStorage = cloudStorage;
         }
 
-        public async Task<ResultModel> GetContractList(int page)
+        public async Task<ResultModel> GetContractList(Guid userId, int page)
         {
             ResultModel result = new ResultModel();
             try
             {
+                var user = await _userRepository.Get(userId); // Await here
+                if (user == null)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 404;
+                    result.Message = "User not found";
+                    return result;
+                }
                 if (page == null || page == 0)
                 {
                     page = 1;
                 }
 
-                var Contracts = await _contractRepository.GetContracts();
-                List<ContractResModel> contractList = new();
-                foreach (var c in Contracts)
+                var contracts = await _contractRepository.GetContractsByOwnerId(userId);
+                List<ContractInfoResModel> contractList = new List<ContractInfoResModel>();
+
+                foreach (var contract in contracts)
                 {
+                    var owner = await _userRepository.Get(contract.OwnerId.Value); // Await here
+                    var customer = await _customerRepository.GetCustomerByUserId(contract.CustomerId); // Await here
+                    var room = await _roomRepository.Get(contract.RoomId.Value); // Await here
 
-                    ContractResModel cl = new()
+                    OwnerContractDetails ownerContractBy = new OwnerContractDetails
                     {
-                        Id = c.Id,
-                        OwnerId = c.OwnerId,
-                        CustomerId = c.CustomerId,
-                        RoomId = c.RoomId,
-                        StartDate = c.StartDate.HasValue == true ? c.StartDate.Value.ToString("dd/MM/yyyy") : null,
-                        EndDate = c.EndDate.HasValue == true ? c.EndDate.Value.ToString("dd/MM/yyyy") : null,
-                        ImagesUrl = c.ImagesUrl,
-                        FileUrl = c.FileUrl,
-                        Status = c.Status,
+                        Id = owner.Id,
+                        Name = owner.FullName
                     };
-                    contractList.Add(cl);
 
+                    CustomerContractDetails customerContractDetails = new CustomerContractDetails
+                    {
+                        Id = customer.Id,
+                        Email = customer.Email,
+                        PhoneNumber = customer.PhoneNumber,
+                        Address = customer.Address,
+                        Gender = customer.Gender,
+                        Dob = customer.Dob?.ToString("dd/MM/yyyy"),
+                        FullName = customer.FullName,
+                        LicensePlates = customer.LicensePlates,
+                        CreatedAt = customer.CreatedAt?.ToString("dd/MM/yyyy"),
+                        CitizenIdNumber = customer.CitizenIdNumber,
+                    };
+
+                    RoomContractDetails roomContractDetails = new RoomContractDetails
+                    {
+                        Id = room.Id,
+                        Name = room.Name,
+                    };
+
+                    ContractInfoResModel contractInfo = new ContractInfoResModel
+                    {
+                        Id = contract.Id,
+                        Owner = ownerContractBy,
+                        CustomerDetails = customerContractDetails,
+                        RoomDetails = roomContractDetails,
+                        StartDate = contract.StartDate?.ToString("dd/MM/yyyy"),
+                        EndDate = contract.EndDate?.ToString("dd/MM/yyyy"),
+                        ImagesUrl = contract.ImagesUrl,
+                        FileUrl = contract.FileUrl,
+                        Status = contract.Status,
+                    };
+
+                    contractList.Add(contractInfo);
                 }
-                var ResultList = await Pagination.GetPagination(contractList, page, 10);
+
+                var paginatedResult = await Pagination.GetPagination(contractList, page, 10);
 
                 result.IsSuccess = true;
                 result.Code = 200;
-                result.Data = ResultList;
+                result.Data = paginatedResult;
             }
             catch (Exception e)
             {
@@ -70,12 +112,16 @@ namespace BussinessObject.Services.ContractServices
             return result;
         }
 
-        public async Task<ResultModel> GetContractInformation(Guid contractId)
+
+
+        public async Task<ResultModel> GetContractInformation(Guid userId, Guid contractId)
         {
             ResultModel result = new ResultModel();
             try
             {
-                var Contracts = await _contractRepository.GetContractById(contractId);
+
+                var user = _userRepository.Get(userId);
+                var Contracts = await _contractRepository.GetContractById(userId, contractId);
                 var OwnerContractDetails = await _userRepository.GetUserByID(Contracts.OwnerId);
                 var Customers = await _customerRepository.GetCustomerByUserId(Contracts.CustomerId);
                 var Rooms = await _roomRepository.GetRoomById((Guid)Contracts.RoomId);
@@ -87,6 +133,14 @@ namespace BussinessObject.Services.ContractServices
                     result.Message = "Contract not found";
                     return result;
                 }
+                if (user == null)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 404;
+                    result.Message = "User not found";
+                    return result;
+                }
+
 
                 OwnerContractDetails OwnerContractBy = new()
                 {
@@ -140,12 +194,20 @@ namespace BussinessObject.Services.ContractServices
             return result;
         }
 
-        public async Task<ResultModel> UpdateContract(ContractReqModel contractReqModel)
+        public async Task<ResultModel> UpdateContract(Guid userId, ContractReqModel contractReqModel, string filePath)
         {
             ResultModel result = new();
             try
             {
-                var Contract = await _contractRepository.GetContractById(contractReqModel.Id);
+                var user = await _userRepository.Get(userId);
+                if (user == null)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 404;
+                    result.Message = "User not found";
+                    return result;
+                }
+                var Contract = await _contractRepository.Get(contractReqModel.Id);
                 if (Contract == null)
                 {
                     result.IsSuccess = false;
@@ -154,13 +216,13 @@ namespace BussinessObject.Services.ContractServices
                     return result;
                 }
 
-                Contract.EndDate = contractReqModel.EndDate;
-                Contract.ImagesUrl = contractReqModel.ImagesUrl;
-                Contract.FileUrl = contractReqModel.FileUrl;
+                Contract.ImagesUrl = filePath;
+
 
                 _ = await _contractRepository.Update(Contract);
                 result.IsSuccess = true;
                 result.Code = 200;
+                result.Data = Contract;
                 result.Message = "Contract updated successfully";
             }
             catch (Exception ex)
@@ -172,12 +234,33 @@ namespace BussinessObject.Services.ContractServices
             return result;
         }
 
-        public async Task<ResultModel> UpdateContractStatus(ContractUpdateStatusReqModel contractUpdateStatusReqModel)
+
+        public async Task<(string filePath, string fileName)> DownloadFile(Guid userId, Guid contractId)
+        {
+
+
+            var contract = await _contractRepository.GetContractById(userId, contractId);
+            string filePath = contract.ImagesUrl;
+            string fileName = Path.GetFileName(filePath);
+            return (filePath, fileName);
+        }
+
+
+
+        public async Task<ResultModel> UpdateContractStatus(Guid userId, ContractUpdateStatusReqModel contractUpdateStatusReqModel)
         {
             ResultModel result = new();
             try
             {
-                var Contract = await _contractRepository.GetContractById(contractUpdateStatusReqModel.Id);
+                var user = _userRepository.Get(userId);
+                if (user == null)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 404;
+                    result.Message = "User not found";
+                    return result;
+                }
+                var Contract = await _contractRepository.GetContractById(userId, contractUpdateStatusReqModel.Id);
                 if (Contract == null)
                 {
                     result.IsSuccess = false;
@@ -202,13 +285,21 @@ namespace BussinessObject.Services.ContractServices
             return result;
         }
 
-        public async Task<ResultModel> GetContractByRoom(Guid roomId)
+        public async Task<ResultModel> GetContractByRoom(Guid userId, Guid roomId)
         {
             ResultModel result = new ResultModel();
 
             try
             {
-                var Contracts = await _contractRepository.GetContractByRoomId(roomId);
+                var user = _userRepository.Get(userId);
+                if (user == null)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 404;
+                    result.Message = "User not found";
+                    return result;
+                }
+                var Contracts = await _contractRepository.GetContractByRoomId(userId, roomId);
                 List<ContractOfRoomModel> contractOfRoomList = new();
                 foreach (var c in Contracts)
                 {
@@ -253,5 +344,7 @@ namespace BussinessObject.Services.ContractServices
             }
             return result;
         }
+
+
     }
 }

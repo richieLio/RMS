@@ -5,7 +5,7 @@ using DataAccess.Models.VerifyModel;
 using DataAccess.Repositories.OTPRepo;
 using DataAccess.Repositories.UserRepository;
 using DataAccess.ResultModel;
-using EmailUltilities = Business.Ultilities.Email;
+using EmailUltilities = Business.Utilities.Email;
 
 
 namespace BussinessObject.Services.VerifyServices

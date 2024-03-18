@@ -18,6 +18,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using BussinessObject.Utilities;
+using BussinessObject.Services.ServiceFeeServices;
+using DataAccess.Repositories.ServiceFeeRepository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -78,8 +81,6 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // Connect Database 
-//builder.Services.AddDbContext<HouseManagementContext>(ServiceLifetime.Transient);
-//builder.Services.AddDbContext<HouseManagementContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("HouseManagement")));
 builder.Services.AddDbContext<HouseManagementContext>(option => option.UseMySQL(builder.Configuration.GetConnectionString("DefaultConnection")), ServiceLifetime.Transient);
 
 
@@ -91,7 +92,9 @@ builder.Services.AddScoped<IRoomServices, RoomServices>();
 builder.Services.AddScoped<IBillServices, BillServices>();
 builder.Services.AddScoped<ICustomerServices, CustomerServices>();
 builder.Services.AddScoped<IContractServices, ContractServices>();
-
+builder.Services.AddScoped<IServiceFeeServices, ServiceFeeServices>();
+builder.Services.AddScoped<CloudStorage>(_ =>
+                        new CloudStorage("firebaseKey.Json"));
 
 //Subcribe repository
 builder.Services.AddTransient<IUserRepository, UserRepository>();
@@ -101,6 +104,7 @@ builder.Services.AddTransient<IRoomRepository, RoomRepository>();
 builder.Services.AddTransient<IContractRepository, ContractRepository>();
 builder.Services.AddTransient<IBillRepository, BillRepository>();
 builder.Services.AddTransient<ICustomerRepository, CustomerRepository>();
+builder.Services.AddTransient<IServiceFeeRepository, ServiceFeeRepository>();
 
 //Add CORS
 builder.Services.AddCors(options =>

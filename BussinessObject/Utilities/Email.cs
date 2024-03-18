@@ -1,7 +1,7 @@
 ﻿using MailKit.Security;
 using MimeKit;
 
-namespace Business.Ultilities
+namespace Business.Utilities
 {
     public class Email
     {

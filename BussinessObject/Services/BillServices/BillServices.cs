@@ -2,23 +2,37 @@
 using DataAccess.Entities;
 using DataAccess.Models.BillModel;
 using DataAccess.Repositories.BillRepository;
+using DataAccess.Repositories.UserRepository;
 using DataAccess.ResultModel;
+using MySqlX.XDevAPI.Common;
 
 namespace BussinessObject.Services.BillServices
 {
     public class BillServices : IBillServices
     {
         private readonly IBillRepository _billRepository;
-
-        public BillServices(IBillRepository billRepository)
+        private readonly IUserRepository _userRepository;
+        public BillServices(IBillRepository billRepository, IUserRepository userRepository)
         {
             _billRepository = billRepository;
+            _userRepository = userRepository;
         }
         public async Task<ResultModel> CreateBill(Guid userId, BillCreateReqModel billCreateReqModel)
         {
-            ResultModel Result = new();
+            ResultModel result = new ResultModel();
             try
             {
+                var user = await _userRepository.Get(userId);
+                if (user == null)
+                {
+                    return new ResultModel
+                    {
+                        IsSuccess = false,
+                        Code = 404,
+                        Message = "User not found."
+                    };
+                }
+
                 var config = new MapperConfiguration(cfg =>
                 {
                     cfg.CreateMap<BillCreateReqModel, Bill>();
@@ -26,46 +40,52 @@ namespace BussinessObject.Services.BillServices
                 IMapper mapper = config.CreateMapper();
                 Bill newBill = mapper.Map<BillCreateReqModel, Bill>(billCreateReqModel);
 
-                //giá tiền phòng
-                var rentAmount = billCreateReqModel.RentAmount;
-                // giá tiền điện
-                var electricUnitPrice = billCreateReqModel.ElectricityUnitPrice;
-                // số điện đã sử dụng
-                var electricUsed = billCreateReqModel.ElectricityUsed;
-                // giá tiền nước 
-                var waterUnitPrice = billCreateReqModel.WaterUnitPrice;
-                //số nước đã sử dụng
-                var waterUsed = billCreateReqModel.WaterUsed;
-                // phí dịch vụ
-                var servicePrice = billCreateReqModel.ServicePrice;
-
-
-
+                // Thêm bill 
                 newBill.Id = Guid.NewGuid();
-                newBill.RentAmount = rentAmount;
-                newBill.ElectricityUnitPrice = electricUnitPrice;
-                newBill.ElectricityUsed = electricUsed;
-                newBill.WaterUnitPrice = waterUnitPrice;
-                newBill.WaterUsed = waterUsed;
-                newBill.ServicePrice = billCreateReqModel.ServicePrice;
-                newBill.TotalPice = rentAmount + (electricUnitPrice * (decimal)electricUsed) + (waterUnitPrice * (decimal)waterUsed) + servicePrice;
                 newBill.Month = DateTime.Now;
                 newBill.IsPaid = false;
                 newBill.CreateBy = userId;
                 newBill.RoomId = billCreateReqModel?.RoomId;
-                _ = await _billRepository.Insert(newBill);
-                Result.IsSuccess = true;
-                Result.Code = 200;
-                Result.Message = "Bill created successfully!";
+                await _billRepository.Insert(newBill);
+
+                
+                var serviceQuantities = billCreateReqModel.ServiceQuantities;
+
+                var isAddService = await _billRepository.AddServicesToBill(newBill.Id, serviceQuantities);
+
+               
+                
+                if (!isAddService)
+                {
+                    return new ResultModel
+                    {
+                        IsSuccess = false,
+                        Code = 404,
+                        Message = "Failed to add service to bill."
+                    };
+                }
+                
+
+                return new ResultModel
+                {
+                    IsSuccess = true,
+                    Code = 200,
+                    Message = "Bill created successfully!"
+                };
+
+                
             }
             catch (Exception e)
             {
-                Result.IsSuccess = false;
-                Result.Code = 400;
-                Result.ResponseFailed = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+                return new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = 400,
+                    ResponseFailed = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace
+                };
             }
-            return Result;
         }
+
 
     }
 }

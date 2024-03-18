@@ -48,7 +48,7 @@ namespace DataAccess.Repositories.RoomRepository
         }
 
 
-        public async Task<Room?> GetRoomById(Guid roomId)
+        public async Task<Room?> GetRoomById(Guid? roomId)
         {
             return await _rooms
                 .FirstOrDefaultAsync(r => r.Id == roomId);
@@ -57,6 +57,10 @@ namespace DataAccess.Repositories.RoomRepository
         {
             return await _context.Users
                 .AnyAsync(u => u.Id == customerId && u.Rooms.Any(r => r.Id == roomId));
+        }
+        public async Task<Room> GetRoomByName(string name)
+        {
+            return await _context.Rooms.FirstOrDefaultAsync(r => r.Name == name);
         }
     }
 }
