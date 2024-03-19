@@ -6,6 +6,7 @@ using DataAccess.Models.ServiceModel;
 using DataAccess.Repositories.BillRepository;
 using DataAccess.Repositories.HouseRepository;
 using DataAccess.Repositories.RoomRepository;
+using DataAccess.Repositories.ServiceFeeRepository;
 using DataAccess.Repositories.UserRepository;
 using DataAccess.ResultModel;
 using Google.Api.Gax;
@@ -19,12 +20,16 @@ namespace BussinessObject.Services.BillServices
         private readonly IUserRepository _userRepository;
         private readonly IRoomRepository _roomRepository;
         private readonly IHouseRepository _houseRepository;
-        public BillServices(IBillRepository billRepository, IUserRepository userRepository, IRoomRepository roomRepository, IHouseRepository houseRepository)
+        private readonly IServiceFeeRepository _serviceFeeRepository;
+        public BillServices(IBillRepository billRepository, 
+            IUserRepository userRepository, IRoomRepository roomRepository,
+            IHouseRepository houseRepository, IServiceFeeRepository serviceFeeRepository)
         {
             _billRepository = billRepository;
             _userRepository = userRepository;
             _roomRepository = roomRepository;
             _houseRepository = houseRepository;
+            _serviceFeeRepository = serviceFeeRepository;
         }
         public async Task<ResultModel> CreateBill(Guid userId, BillCreateReqModel billCreateReqModel)
         {
@@ -113,15 +118,15 @@ namespace BussinessObject.Services.BillServices
                     page = 1;
                 }
                 var bills = await _billRepository.GetBillsByUserId(userId);
-                List<BillResModel> billList = new List<BillResModel>(); 
+                List<BillResModel> billList = new List<BillResModel>();
 
-                foreach (var bill in bills) 
+                foreach (var bill in bills)
                 {
                     var room = await _roomRepository.GetRoomById(bill.RoomId);
                     var house = await _houseRepository.Get(room.HouseId.Value);
                     string houseName = house.Name;
                     string roomName = room.Name;
-                    BillResModel bl = new BillResModel() 
+                    BillResModel bl = new BillResModel()
                     {
                         Id = bill.Id,
                         TotalPrice = bill.TotalPrice,
@@ -165,14 +170,59 @@ namespace BussinessObject.Services.BillServices
                     result.Message = "User not found";
                     return result;
                 }
-               
-                var bills = await _billRepository.GetBillDetails(userId, billId);
 
+                var bills = await _billRepository.GetBillDetails(userId, billId);
+                if (bills == null)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 404;
+                    result.Message = "Bill not found";
+                    return result;
+                }
                
+
+
+                var billServices = await _billRepository.GetBillServicesForBill(billId);
+                if (billServices == null)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 404;
+                    result.Message = "Bill services not found";
+                    return result;
+                }
+                // take room and house name
+                var bill = await _billRepository.Get(billId);
+
+                var room = await _roomRepository.Get(bill.RoomId.Value);
+                string roomName = room.Name;
+                var house = await _houseRepository.Get(room.HouseId.Value);
+                string houseName = house.Name;
+
+                BillDetailsResModel billDetails = new BillDetailsResModel();
+                billDetails.Id = billId;
+                billDetails.TotalPrice = bills.TotalPrice;
+                billDetails.Month = bills.Month;
+                billDetails.IsPaid = bills.IsPaid;
+                billDetails.PaymentDate = bills.PaymentDate;
+                billDetails.RoomName = roomName;
+                billDetails.HouseName = houseName;
+                
+
+
+
+
+                if (billServices != null)
+                {
+                    billDetails.Services = billServices.Select(bs => new BillServiceDetails
+                    {
+                        ServiceName = bs.Service?.Name, 
+                        Quantity = bs.Quantity
+                    }).ToList();
+                }
 
                 result.IsSuccess = true;
                 result.Code = 200;
-                result.Data = bills;
+                result.Data = billDetails;
                 return result;
             }
             catch (Exception ex)
@@ -183,6 +233,7 @@ namespace BussinessObject.Services.BillServices
                 return result;
             }
         }
+
 
     }
 

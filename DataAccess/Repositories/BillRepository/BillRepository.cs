@@ -65,5 +65,14 @@ namespace DataAccess.Repositories.BillRepository
         {
             return await _context.Bills.Where(b => b.CreateBy == userId).ToListAsync();
         }
+        public async Task<List<BillService>> GetBillServicesForBill(Guid billId)
+        {
+           
+            return await _context.BillServices
+                .Where(bs => bs.BillId == billId)
+                .Include(bs => bs.Service) 
+                .ToListAsync();
+        }
+
     }
 }
