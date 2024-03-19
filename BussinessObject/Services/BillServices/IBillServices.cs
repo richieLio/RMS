@@ -7,5 +7,6 @@ namespace BussinessObject.Services.BillServices
     {
         Task<ResultModel> CreateBill(Guid userId, BillCreateReqModel billCreateReqModel);
         Task<ResultModel> GetAllBills(Guid userId, int page);
+        Task<ResultModel> getBillDetails(Guid userId, Guid billId);
     }
 }
