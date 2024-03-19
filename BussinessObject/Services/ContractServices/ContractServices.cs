@@ -11,6 +11,8 @@ using System.Diagnostics.Contracts;
 
 namespace BussinessObject.Services.ContractServices
 {
+
+    // trandailoi was here
     public class ContractServices : IContractServices
     {
         private readonly IContractRepository _contractRepository;
