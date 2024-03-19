@@ -1,27 +1,27 @@
-﻿using BussinessObject.Services.HouseServices;
+﻿using BussinessObject.Services.ServiceFeeServices;
 using DataAccess.Entities;
-using DataAccess.Models.HouseModel;
+using DataAccess.Models.ServiceModel;
 using DataAccess.ResultModel;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
-    [Route("api/house")]
+    [Route("api/servicefee")]
     [ApiController]
-    public class HouseController : ControllerBase
+    public class ServiceFeeController : ControllerBase
     {
-        private readonly IHouseServices _houseServices;
 
-        public HouseController(IHouseServices houseServices)
+        private readonly IServiceFeeServices _serviceFeeServices;
+        public ServiceFeeController(IServiceFeeServices serviceFeeServices)
         {
-            _houseServices = houseServices;
+            _serviceFeeServices = serviceFeeServices;
         }
 
         [HttpGet("list")]
-        public async Task<IActionResult> GetHouses(int page)
+        public async Task<IActionResult> GetAllServices(int page)
         {
             var userIdString = User.FindFirst("userid")?.Value;
-
             if (string.IsNullOrEmpty(userIdString))
             {
                 return BadRequest("Unable to retrieve user ID");
@@ -30,15 +30,30 @@ namespace API.Controllers
             {
                 return BadRequest("Invalid user ID format");
             }
-            ResultModel result = await _houseServices.GetHousesByUserId(page, userId);
+            ResultModel result = await _serviceFeeServices.GetServicesList(userId, page);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
+
+        }
+        [HttpGet("get-all")]
+        public async Task<IActionResult> GetAllService()
+        {
+            var userIdString = User.FindFirst("userid")?.Value;
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                return BadRequest("Unable to retrieve user ID");
+            }
+            if (!Guid.TryParse(userIdString, out Guid userId))
+            {
+                return BadRequest("Invalid user ID format");
+            }
+            ResultModel result = await _serviceFeeServices.GetServicesList(userId);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+
         }
         [HttpPost("add-new")]
-        public async Task<IActionResult> CreateHouse([FromBody] HouseCreateReqModel Form)
+        public async Task<IActionResult> AddNewService(ServiceCreateReqModel service)
         {
             var userIdString = User.FindFirst("userid")?.Value;
-
-
             if (string.IsNullOrEmpty(userIdString))
             {
                 return BadRequest("Unable to retrieve user ID");
@@ -47,14 +62,14 @@ namespace API.Controllers
             {
                 return BadRequest("Invalid user ID format");
             }
-            ResultModel result = await _houseServices.AddHouse(userId, Form);
+            ResultModel result = await _serviceFeeServices.AddNewService(userId, service);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
+
         }
         [HttpPut("update")]
-        public async Task<IActionResult> Update([FromBody] HouseUpdateReqModel Form)
+        public async Task<IActionResult> UpdateServices(ServiceUpdateReqModel service)
         {
             var userIdString = User.FindFirst("userid")?.Value;
-
             if (string.IsNullOrEmpty(userIdString))
             {
                 return BadRequest("Unable to retrieve user ID");
@@ -63,12 +78,12 @@ namespace API.Controllers
             {
                 return BadRequest("Invalid user ID format");
             }
-            ResultModel result = await _houseServices.UpdateHouse(userId, Form);
+            ResultModel result = await _serviceFeeServices.UpdateService(userId, service);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
+
         }
-
-        [HttpGet("information")]
-        public async Task<IActionResult> getHouseInfoById(Guid houseId)
+        [HttpDelete("delete")]
+        public async Task<IActionResult> DeleteService(Guid serviceId)
         {
             var userIdString = User.FindFirst("userid")?.Value;
             if (string.IsNullOrEmpty(userIdString))
@@ -79,25 +94,9 @@ namespace API.Controllers
             {
                 return BadRequest("Invalid user ID format");
             }
-            ResultModel result = await _houseServices.GetHouseById(userId, houseId);
+            ResultModel result = await _serviceFeeServices.RemoveService(userId, serviceId);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
-        }
 
-        [HttpPut("update-status")]
-        public async Task<IActionResult> UpdateHouseStatus([FromBody] HouseUpdateStatusReqModel Form)
-        {
-            var userIdString = User.FindFirst("userid")?.Value;
-            if (string.IsNullOrEmpty(userIdString))
-            {
-                return BadRequest("Unable to retrieve user ID");
-            }
-            if (!Guid.TryParse(userIdString, out Guid userId))
-            {
-                return BadRequest("Invalid user ID format");
-            }
-            ResultModel result = await _houseServices.UpdateHouseStatus(userId, Form);
-            return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
     }
 }
-

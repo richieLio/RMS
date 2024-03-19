@@ -16,14 +16,38 @@ namespace API.Controllers
             _roomServices = roomServices;
         }
 
-        [HttpPost("add-new")]
-        public async Task<IActionResult> CreateHouse([FromBody] RoomCreateReqModel Form)
+        [HttpPost("add-range")]
+        public async Task<IActionResult> CreateRangeRoom([FromBody] RoomCreateRangeReqModel Form)
         {
-            ResultModel result = await _roomServices.AddRangeRoom(Form);
+            var userIdString = User.FindFirst("userid")?.Value;
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                return BadRequest("Unable to retrieve user ID");
+            }
+            if (!Guid.TryParse(userIdString, out Guid userId))
+            {
+                return BadRequest("Invalid user ID format");
+            }
+            ResultModel result = await _roomServices.AddRangeRoom(userId, Form);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+        [HttpPost("add")]
+        public async Task<IActionResult> CreateRoom([FromBody] RoomCreateReqModel Form)
+        {
+            var userIdString = User.FindFirst("userid")?.Value;
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                return BadRequest("Unable to retrieve user ID");
+            }
+            if (!Guid.TryParse(userIdString, out Guid userId))
+            {
+                return BadRequest("Invalid user ID format");
+            }
+            ResultModel result = await _roomServices.AddRoom(userId, Form);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 
-        [HttpPost("add-customer-to-room")]
+        [HttpPost("add-customer")]
         public async Task<IActionResult> AddCusomerToRoom([FromBody] AddCustomerToRoomReqModel Form)
         {
             var userIdString = User.FindFirst("userid")?.Value;
@@ -39,8 +63,8 @@ namespace API.Controllers
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 
-        [HttpGet("customer-in-room-information")]
-        public async Task<IActionResult> GetCustomerByRoom(Guid roomId)
+        [HttpGet("customers")] // get customer by room(url: https://localhost:7084/api/room/customer
+        public async Task<IActionResult> GetCustomerByRoom(int page, Guid roomId)
         {
             var userIdString = User.FindFirst("userid")?.Value;
             if (string.IsNullOrEmpty(userIdString))
@@ -51,20 +75,38 @@ namespace API.Controllers
             {
                 return BadRequest("Invalid user ID format");
             }
-            ResultModel result = await _roomServices.GetCustomerByRoomId(userId, roomId);
+            ResultModel result = await _roomServices.GetCustomerByRoomId(page,userId, roomId);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 
         [HttpGet("list")]
-        public async Task<IActionResult> GetRoomList(int page)
+        public async Task<IActionResult> GetRoomList(int page, Guid houseId)
         {
-            ResultModel result = await _roomServices.GetRoomList(page);
+            var userIdString = User.FindFirst("userid")?.Value;
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                return BadRequest("Unable to retrieve user ID");
+            }
+            if (!Guid.TryParse(userIdString, out Guid userId))
+            {
+                return BadRequest("Invalid user ID format");
+            }
+            ResultModel result = await _roomServices.GetRoomList(page, userId, houseId);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 
         [HttpGet("information")]
         public async Task<IActionResult> GetRoomInformation(Guid roomId)
         {
+            var userIdString = User.FindFirst("userid")?.Value;
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                return BadRequest("Unable to retrieve user ID");
+            }
+            if (!Guid.TryParse(userIdString, out Guid userId))
+            {
+                return BadRequest("Invalid user ID format");
+            }
             ResultModel result = await _roomServices.GetRoomInformation(roomId);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }

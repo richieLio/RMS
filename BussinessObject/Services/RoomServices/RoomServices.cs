@@ -1,17 +1,19 @@
 ﻿using AutoMapper;
-using BussinessObject.Ultilities;
+using BussinessObject.Utilities;
 using Data.Enums;
 using DataAccess.Entities;
 using DataAccess.Enums;
 using DataAccess.Models.CustomerModel;
+using DataAccess.Models.HouseModel;
 using DataAccess.Models.RoomModel;
 using DataAccess.Repositories.ContractRepository;
 using DataAccess.Repositories.HouseRepository;
 using DataAccess.Repositories.RoomRepository;
 using DataAccess.Repositories.UserRepository;
 using DataAccess.ResultModel;
-using EmailUltilities = Business.Ultilities.Email;
-using Encoder = Business.Ultilities.Encoder;
+using MySqlX.XDevAPI.Common;
+using EmailUltilities = Business.Utilities.Email;
+using Encoder = Business.Utilities.Encoder;
 
 
 
@@ -31,24 +33,43 @@ namespace BussinessObject.Services.RoomServices
             _contractRepository = contractRepository;
         }
 
-        public async Task<ResultModel> AddRangeRoom(RoomCreateReqModel roomCreateReqModel)
+        public async Task<ResultModel> AddRangeRoom(Guid userId, RoomCreateRangeReqModel roomCreateReqModel)
         {
             ResultModel Result = new();
             try
             {
-                int? RoomQuantity = await _houseRepository.GetRoomQuantityByHouseId(roomCreateReqModel.HouseId);
+                int? UpdateRoomQuantity = await _houseRepository.GetRoomQuantityByHouseId(roomCreateReqModel.HouseId);
+                var house = await _houseRepository.Get(roomCreateReqModel.HouseId);
+                var user = await _userRepository.GetUserByID(userId);
+
+                if (user == null)
+                {
+                    Result.IsSuccess = false;
+                    Result.Code = 404;
+                    Result.Message = "User not found.";
+                    return Result;
+                }
+                if (house == null)
+                {
+                    Result.IsSuccess = false;
+                    Result.Code = 400;
+                    Result.Message = "House not found";
+                    return Result;
+                }
+
+                int? RoomQuantity = roomCreateReqModel.Quantity;
                 if (RoomQuantity.HasValue && RoomQuantity > 0)
                 {
                     var config = new MapperConfiguration(cfg =>
                     {
-                        cfg.CreateMap<RoomCreateReqModel, Room>();
+                        cfg.CreateMap<RoomCreateRangeReqModel, Room>();
                     });
                     IMapper mapper = config.CreateMapper();
 
                     var newRooms = new List<Room>();
                     for (int i = 0; i < RoomQuantity.Value; i++)
                     {
-                        Room newRoom = mapper.Map<RoomCreateReqModel, Room>(roomCreateReqModel);
+                        Room newRoom = mapper.Map<RoomCreateRangeReqModel, Room>(roomCreateReqModel);
 
                         newRoom.Id = Guid.NewGuid();
                         newRoom.HouseId = roomCreateReqModel.HouseId;
@@ -60,13 +81,85 @@ namespace BussinessObject.Services.RoomServices
                     Result.IsSuccess = true;
                     Result.Code = 200;
                     Result.Message = "Create rooms successfully!";
+
+                    if (UpdateRoomQuantity.HasValue)
+                    {
+                        int newRoomQuantity = UpdateRoomQuantity.Value + RoomQuantity.Value;
+                        house.RoomQuantity = newRoomQuantity;
+                        house.AvailableRoom += RoomQuantity.Value;
+                        await _houseRepository.Update(house);
+                    }
                 }
                 else
                 {
                     Result.IsSuccess = false;
                     Result.Code = 400;
-                    Result.Message = "House not found or no rooms available.";
+                    Result.Message = "House not found";
                 }
+            }
+            catch (Exception e)
+            {
+                Result.IsSuccess = false;
+                Result.Code = 400;
+                Result.ResponseFailed = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+            }
+            return Result;
+        }
+        public async Task<ResultModel> AddRoom(Guid userId, RoomCreateReqModel roomCreateReqModel)
+        {
+            ResultModel Result = new();
+            try
+            {
+                int? UpdateRoomQuantity = await _houseRepository.GetRoomQuantityByHouseId(roomCreateReqModel.HouseId);
+                var house = await _houseRepository.Get(roomCreateReqModel.HouseId);
+                var user = await _userRepository.GetUserByID(userId);
+                var existingRoom = await _roomRepository.GetRoomByName(roomCreateReqModel.Name);
+                if (existingRoom != null)
+                {
+                    Result.IsSuccess = false;
+                    Result.Code = 400;
+                    Result.Message = "House with this name already exists.";
+                    return Result;
+                }
+                if (user == null)
+                {
+                    Result.IsSuccess = false;
+                    Result.Code = 404;
+                    Result.Message = "User not found.";
+                    return Result;
+                }
+                if (house == null)
+                {
+                    Result.IsSuccess = false;
+                    Result.Code = 400;
+                    Result.Message = "House not found";
+                }
+
+                var config = new MapperConfiguration(cfg =>
+                {
+                    cfg.CreateMap<RoomCreateReqModel, Room>();
+                });
+                IMapper mapper = config.CreateMapper();
+                Room newRoom = mapper.Map<RoomCreateReqModel, Room>(roomCreateReqModel);
+
+                newRoom.Id = Guid.NewGuid();
+                newRoom.HouseId = roomCreateReqModel.HouseId;
+                newRoom.Name = roomCreateReqModel.Name;
+                newRoom.Status = GeneralStatus.ACTIVE;
+
+                await _roomRepository.Insert(newRoom);
+                Result.IsSuccess = true;
+                Result.Code = 200;
+                Result.Data = newRoom;
+                Result.Message = "Create rooms successfully!";
+
+                if (UpdateRoomQuantity.HasValue)
+                {
+                    house.RoomQuantity += 1;
+                    house.AvailableRoom += 1;
+                    await _houseRepository.Update(house);
+                }
+
             }
             catch (Exception e)
             {
@@ -89,11 +182,18 @@ namespace BussinessObject.Services.RoomServices
                 var house = await _houseRepository.Get(houseUpdateAvaiableRoom.HouseId);
                 int availableRoom = await _houseRepository.GetAvailableRoomByHouseId(houseUpdateAvaiableRoom.HouseId);
 
-                if (user == null || house == null)
+                if (user == null)
                 {
                     result.IsSuccess = false;
                     result.Code = 404;
                     result.Message = "User not found.";
+                    return result;
+                }
+                if (house == null)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 404;
+                    result.Message = "House not found.";
                     return result;
                 }
                 var check = await _userRepository.CheckIfCustomerIsExisted(customerCreateReqModel.Email, customerCreateReqModel.PhoneNumber,
@@ -201,12 +301,24 @@ namespace BussinessObject.Services.RoomServices
             int otp = rnd.Next(100000, 999999);
             return otp.ToString();
         }
-        public async Task<ResultModel> GetCustomerByRoomId(Guid userId, Guid roomId)
+        public async Task<ResultModel> GetCustomerByRoomId(int page, Guid userId, Guid roomId)
         {
             ResultModel result = new ResultModel();
 
             try
             {
+                if (page == null || page == 0)
+                {
+                    page = 1;
+                }
+                var user = _userRepository.Get(userId);
+                if (user == null)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 404;
+                    result.Message = "User not found.";
+                    return result;
+                }
                 var customers = await _roomRepository.GetCustomersByRoomId(roomId);
 
                 var customerModels = customers.Select(c => new CustomerResModel
@@ -233,9 +345,10 @@ namespace BussinessObject.Services.RoomServices
                 }
                 else
                 {
+                    var ResultList = await Pagination.GetPagination(customers, page, 10);
                     result.IsSuccess = true;
                     result.Code = 200;
-                    result.Data = customerModels;
+                    result.Data = ResultList;
                 }
 
             }
@@ -248,17 +361,33 @@ namespace BussinessObject.Services.RoomServices
             return result;
         }
 
-        public async Task<ResultModel> GetRoomList(int page)
+        public async Task<ResultModel> GetRoomList(int page, Guid userId, Guid houseId)
         {
             ResultModel result = new ResultModel();
             try
             {
+                var user = _userRepository.Get(userId);
+                var house = _houseRepository.Get(houseId);
+                if (user == null)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 404;
+                    result.Message = "User not found.";
+                    return result;
+                }
+                if (house == null)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 404;
+                    result.Message = "House not found.";
+                    return result;
+                }
                 if (page == null || page == 0)
                 {
                     page = 1;
                 }
 
-                var rooms = await _roomRepository.GetRooms();
+                var rooms = await _roomRepository.GetRooms(houseId);
                 List<RoomResModel> roomList = new();
                 foreach (var r in rooms)
                 {

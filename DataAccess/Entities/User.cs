@@ -1,4 +1,7 @@
-﻿namespace DataAccess.Entities;
+﻿using System;
+using System.Collections.Generic;
+
+namespace DataAccess.Entities;
 
 public partial class User
 {
@@ -52,6 +55,8 @@ public partial class User
     public virtual ICollection<Otpverify> Otpverifies { get; set; } = new List<Otpverify>();
 
     public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
+
+    public virtual ICollection<Service> Services { get; set; } = new List<Service>();
 
     public virtual ICollection<Room> Rooms { get; set; } = new List<Room>();
 }

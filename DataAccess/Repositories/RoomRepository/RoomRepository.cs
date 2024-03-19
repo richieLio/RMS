@@ -40,12 +40,15 @@ namespace DataAccess.Repositories.RoomRepository
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<Room>> GetRooms()
+        public async Task<IEnumerable<Room>> GetRooms(Guid houseId)
         {
-            return await _rooms.Where(x => x.Status.Equals(GeneralStatus.ACTIVE)).ToListAsync();
+            return await _rooms
+                .Where(r => r.HouseId == houseId && r.Status == GeneralStatus.ACTIVE)
+                .ToListAsync();
         }
 
-        public async Task<Room?> GetRoomById(Guid roomId)
+
+        public async Task<Room?> GetRoomById(Guid? roomId)
         {
             return await _rooms
                 .FirstOrDefaultAsync(r => r.Id == roomId);
@@ -54,6 +57,10 @@ namespace DataAccess.Repositories.RoomRepository
         {
             return await _context.Users
                 .AnyAsync(u => u.Id == customerId && u.Rooms.Any(r => r.Id == roomId));
+        }
+        public async Task<Room> GetRoomByName(string name)
+        {
+            return await _context.Rooms.FirstOrDefaultAsync(r => r.Name == name);
         }
     }
 }

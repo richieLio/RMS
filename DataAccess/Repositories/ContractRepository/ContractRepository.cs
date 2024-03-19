@@ -16,15 +16,25 @@ namespace DataAccess.Repositories.ContractRepository
             _contracts = context.Set<Contract>();
         }
 
-        public async Task<IEnumerable<Contract>> GetContracts()
+        public async Task<IEnumerable<Contract>> GetContractsByOwnerId(Guid onwerId)
         {
-            return await _contracts.Where(x => x.Status.Equals(GeneralStatus.ACTIVE)).ToListAsync();
+            return await _contracts.Where(x => x.Status.Equals(GeneralStatus.ACTIVE) && x.OwnerId == onwerId).ToListAsync();
         }
 
-        public async Task<Contract?> GetContractById(Guid contractId)
+        public async Task<Contract?> GetContractById(Guid ownerId, Guid contractId)
         {
             return await _contracts
-                .FirstOrDefaultAsync(c => c.Id == contractId);
+                .FirstOrDefaultAsync(c => c.Id == contractId && c.OwnerId == ownerId);
         }
-    }
+
+        public async Task<IEnumerable<Contract>> GetContractByRoomId(Guid ownerId, Guid roomId)
+        {
+            return await _context.Contracts.Where(r => r.RoomId == roomId && r.OwnerId == ownerId).ToListAsync();
+        }
+
+        public async Task<Contract> UpdateByOwnerId(Guid ownerId, Contract contract)
+        {
+            return await _context.Contracts.FirstOrDefaultAsync(c => c.OwnerId == ownerId && c.Id == contract.Id);
+        }
+    }   
 }

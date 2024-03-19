@@ -5,7 +5,9 @@ namespace DataAccess.Repositories.ContractRepository
 {
     public interface IContractRepository : IRepository<Contract>
     {
-        Task<IEnumerable<Contract>> GetContracts();
-        Task<Contract?> GetContractById(Guid contractId);
+        Task<IEnumerable<Contract>> GetContractsByOwnerId(Guid ownerId);
+        Task<Contract?> GetContractById(Guid ownerId,Guid contractId);
+        Task<IEnumerable<Contract>> GetContractByRoomId(Guid ownerId, Guid roomId);
+        Task<Contract> UpdateByOwnerId(Guid ownerId, Contract contract);
     }
 }

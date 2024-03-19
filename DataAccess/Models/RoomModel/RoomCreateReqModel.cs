@@ -4,11 +4,15 @@ using System.Text.Json.Serialization;
 
 namespace DataAccess.Models.RoomModel
 {
+    public class RoomCreateRangeReqModel
+    {
+        public Guid HouseId { get; set; }
+        public int Quantity { get; set; }
+        public string Name { get; set; }
+    }
     public class RoomCreateReqModel
     {
-        [JsonIgnore]
         public Guid HouseId { get; set; }
-
         public string Name { get; set; }
     }
     public class AddCustomerToRoomReqModel
