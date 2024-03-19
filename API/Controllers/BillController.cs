@@ -47,5 +47,20 @@ namespace API.Controllers
             ResultModel result = await _billServices.CreateBill(userId, Form);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
+        [HttpGet("details")]
+        public async Task<IActionResult> getBillDetails(Guid billId)
+        {
+            var userIdString = User.FindFirst("userid")?.Value;
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                return BadRequest("Unable to retrieve user ID");
+            }
+            if (!Guid.TryParse(userIdString, out Guid userId))
+            {
+                return BadRequest("Invalid user ID format");
+            }
+            ResultModel result = await _billServices.getBillDetails(userId, billId);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
     }
 }

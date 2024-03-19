@@ -4,9 +4,11 @@ using DataAccess.Entities;
 using DataAccess.Models.BillModel;
 using DataAccess.Models.ServiceModel;
 using DataAccess.Repositories.BillRepository;
+using DataAccess.Repositories.HouseRepository;
 using DataAccess.Repositories.RoomRepository;
 using DataAccess.Repositories.UserRepository;
 using DataAccess.ResultModel;
+using Google.Api.Gax;
 using MySqlX.XDevAPI.Common;
 
 namespace BussinessObject.Services.BillServices
@@ -16,11 +18,13 @@ namespace BussinessObject.Services.BillServices
         private readonly IBillRepository _billRepository;
         private readonly IUserRepository _userRepository;
         private readonly IRoomRepository _roomRepository;
-        public BillServices(IBillRepository billRepository, IUserRepository userRepository, IRoomRepository roomRepository)
+        private readonly IHouseRepository _houseRepository;
+        public BillServices(IBillRepository billRepository, IUserRepository userRepository, IRoomRepository roomRepository, IHouseRepository houseRepository)
         {
             _billRepository = billRepository;
             _userRepository = userRepository;
             _roomRepository = roomRepository;
+            _houseRepository = houseRepository;
         }
         public async Task<ResultModel> CreateBill(Guid userId, BillCreateReqModel billCreateReqModel)
         {
@@ -114,8 +118,10 @@ namespace BussinessObject.Services.BillServices
                 foreach (var bill in bills) 
                 {
                     var room = await _roomRepository.GetRoomById(bill.RoomId);
+                    var house = await _houseRepository.Get(room.HouseId.Value);
+                    string houseName = house.Name;
                     string roomName = room.Name;
-                    BillResModel bl = new BillResModel() // Create a new instance of BillResModel
+                    BillResModel bl = new BillResModel() 
                     {
                         Id = bill.Id,
                         TotalPrice = bill.TotalPrice,
@@ -124,7 +130,8 @@ namespace BussinessObject.Services.BillServices
                         PaymentDate = bill.PaymentDate,
                         CreateBy = bill.CreateBy,
                         RoomId = bill.RoomId,
-                        RoomName = roomName
+                        RoomName = roomName,
+                        HouseName = houseName
                     };
                     billList.Add(bl); // Add the created bill model to the list
                 }
@@ -145,6 +152,41 @@ namespace BussinessObject.Services.BillServices
             }
         }
 
+        public async Task<ResultModel> getBillDetails(Guid userId, Guid billId)
+        {
+            ResultModel result = new ResultModel();
+            try
+            {
+                var user = await _userRepository.Get(userId);
+                if (user == null)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 404;
+                    result.Message = "User not found";
+                    return result;
+                }
+               
+                var bills = await _billRepository.GetBillDetails(userId, billId);
+
+               
+
+                result.IsSuccess = true;
+                result.Code = 200;
+                result.Data = bills;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.IsSuccess = false;
+                result.Code = 500; // Internal Server Error
+                result.Message = ex.Message;
+                return result;
+            }
+        }
 
     }
+
+
+
+
 }

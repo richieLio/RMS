@@ -41,6 +41,26 @@ namespace DataAccess.Repositories.BillRepository
             return true;
         }
 
+        public async Task<Bill> GetBillDetails(Guid userId, Guid billId)
+        {
+            var billDetails = await (from bill in _context.Bills
+                                     where bill.Id == billId && bill.CreateBy == userId
+                                     join room in _context.Rooms on bill.RoomId equals room.Id
+                                     join user in _context.Users on bill.CreateBy equals user.Id
+                                     join billService in _context.BillServices on bill.Id equals billService.BillId into services
+                                     select new Bill
+                                     {
+                                         Id = bill.Id,
+                                         Room = room,
+                                         CreateBy = user.Id,
+                                         Month = bill.Month,
+                                         PaymentDate = bill.PaymentDate,
+                                         TotalPrice = bill.TotalPrice,
+                                         BillServices = services.ToList()
+                                     }).FirstOrDefaultAsync();
+
+            return billDetails;
+        }
         public async Task<IEnumerable<Bill>> GetBillsByUserId(Guid userId)
         {
             return await _context.Bills.Where(b => b.CreateBy == userId).ToListAsync();

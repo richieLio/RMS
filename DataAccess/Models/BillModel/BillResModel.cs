@@ -22,5 +22,6 @@ namespace DataAccess.Models.BillModel
 
         public Guid? RoomId { get; set; }
         public string RoomName { get; set; }
+        public string HouseName { get; set; }
     }
 }
