@@ -13,10 +13,7 @@ namespace DataAccess.Repositories.CustomerRepository
             _context = context;
         }
 
-        public async Task<House> GetHouseByAccountName(string name)
-        {
-            return await _context.Houses.Where(x => x.HouseAccount.Equals(name)).FirstOrDefaultAsync();
-        }
+       
 
         public async Task<User> GetCustomerByUserId(Guid? userId)
         {

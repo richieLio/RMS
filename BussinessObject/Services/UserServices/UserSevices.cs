@@ -5,6 +5,10 @@ using DataAccess.Models.EmailModel;
 using DataAccess.Models.UserModel;
 using DataAccess.Repositories.UserRepository;
 using DataAccess.ResultModel;
+using MySqlX.XDevAPI.Common;
+using Newtonsoft.Json;
+using System.IdentityModel.Tokens.Jwt;
+using System.Net.Http;
 using EmailUltilities = Business.Utilities.Email;
 using Encoder = Business.Utilities.Encoder;
 
@@ -14,9 +18,11 @@ namespace BussinessObject.Services.UserServices
     {
 
         private readonly IUserRepository _userRepository;
-        public UserSevices(IUserRepository userRepository)
+        private readonly HttpClient _httpClient;
+        public UserSevices(IUserRepository userRepository, HttpClient httpClient)
         {
             _userRepository = userRepository;
+            _httpClient = httpClient;
         }
 
 
@@ -425,5 +431,132 @@ namespace BussinessObject.Services.UserServices
             }
             return Result;
         }
+
+        public async Task<ResultModel> CreateAccountWithFacebook(string accessToken)
+        {
+            ResultModel result = new ResultModel();
+
+            try
+            {
+
+                // Make request to Facebook's Graph API using the access token
+                var response = await _httpClient.GetAsync($"https://graph.facebook.com/me?fields=email,name,picture.type(large)&access_token={accessToken}");
+                response.EnsureSuccessStatusCode();
+                var content = await response.Content.ReadAsStringAsync();
+                var userData = JsonConvert.DeserializeObject<FacebookUserData>(content);
+
+                // Assuming FacebookUserData contains properties for email, name, etc.
+                var newUser = new User
+                {
+                    Email = userData.Email,
+                    FullName = userData.Name.Length > 50 ? userData.Name.Substring(0, 50) : userData.Name,
+                    Role = UserEnum.OWNER,
+                    Status = UserStatus.ACTIVE,
+                    CreatedAt = DateTime.Now,
+                    Address = "N/A",
+                    Gender = "N/A",
+                    PhoneNumber = "N/A"
+                };
+                var user = await _userRepository.GetUserByEmail(userData.Email);
+                if (user != null)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 400;
+                    result.Message = "You already have an account with this email!.";
+                    return result;
+                }
+                else
+                {
+                    await _userRepository.Insert(newUser);
+
+                }
+                UserLoginResModel LoginResData = new UserLoginResModel();
+                var config = new MapperConfiguration(cfg =>
+                {
+                    cfg.CreateMap<User, UserResModel>();
+                });
+                IMapper mapper = config.CreateMapper();
+                UserResModel UserResModel = mapper.Map<User, UserResModel>(newUser);
+
+                LoginResData.User = UserResModel;
+                LoginResData.Token = Encoder.GenerateJWT(newUser);
+
+                result.IsSuccess = true;
+                result.Code = 200;
+                result.Data = LoginResData;
+                result.Message = "Account created successfully!";
+
+            }
+            catch (HttpRequestException ex)
+            {
+                // Handle HTTP request exceptions
+                result.IsSuccess = false;
+                result.Code = (int)ex.StatusCode; // or set appropriate error code
+                result.Message = "An error occurred while creating the account.";
+                result.ResponseFailed = ex.Message;
+            }
+            catch (Exception e)
+            {
+                // Handle other exceptions
+                result.IsSuccess = false;
+                result.Code = 500;
+                result.Message = "An error occurred while creating the account.";
+                result.ResponseFailed = e.Message;
+            }
+
+            return result;
+        }
+        public async Task<ResultModel> LoginWithFacebook(string accessToken)
+        {
+            ResultModel result = new ResultModel();
+
+            try
+            {
+
+                // Make request to Facebook's Graph API using the access token
+                var response = await _httpClient.GetAsync($"https://graph.facebook.com/me?fields=email,name,picture.type(large)&access_token={accessToken}");
+                response.EnsureSuccessStatusCode();
+                var content = await response.Content.ReadAsStringAsync();
+                var userData = JsonConvert.DeserializeObject<FacebookUserData>(content);
+                var user = await _userRepository.GetUserByEmail(userData.Email);
+                // Assuming FacebookUserData contains properties for email, name, etc.
+               
+                UserLoginResModel LoginResData = new UserLoginResModel();
+                var config = new MapperConfiguration(cfg =>
+                {
+                    cfg.CreateMap<User, UserResModel>();
+                });
+                IMapper mapper = config.CreateMapper();
+                UserResModel UserResModel = mapper.Map<User, UserResModel>(user);
+
+                LoginResData.User = UserResModel;
+                LoginResData.Token = Encoder.GenerateJWT(user);
+
+                result.IsSuccess = true;
+                result.Code = 200;
+                result.Data = LoginResData;
+                result.Message = "Account created successfully!";
+
+            }
+            catch (HttpRequestException ex)
+            {
+                // Handle HTTP request exceptions
+                result.IsSuccess = false;
+                result.Code = (int)ex.StatusCode; // or set appropriate error code
+                result.Message = "An error occurred while creating the account.";
+                result.ResponseFailed = ex.Message;
+            }
+            catch (Exception e)
+            {
+                // Handle other exceptions
+                result.IsSuccess = false;
+                result.Code = 500;
+                result.Message = "An error occurred while creating the account.";
+                result.ResponseFailed = e.Message;
+            }
+
+            return result;
+        }
+
     }
 }

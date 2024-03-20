@@ -121,11 +121,8 @@ public partial class HouseManagementContext : DbContext
             entity.HasIndex(e => e.OwnerId, "FK_House_User");
 
             entity.Property(e => e.Address).HasMaxLength(50);
-            entity.Property(e => e.HouseAccount).HasMaxLength(50);
             entity.Property(e => e.Name).HasMaxLength(50);
-            entity.Property(e => e.Password).HasMaxLength(512);
             entity.Property(e => e.RoomQuantity).HasComment("Số lượng phòng");
-            entity.Property(e => e.Salt).HasMaxLength(512);
             entity.Property(e => e.Status).HasMaxLength(50);
 
             entity.HasOne(d => d.Owner).WithMany(p => p.Houses)

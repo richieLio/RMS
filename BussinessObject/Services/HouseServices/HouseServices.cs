@@ -42,20 +42,15 @@ namespace BussinessObject.Services.HouseServices
 
                 var config = new MapperConfiguration(cfg =>
                 {
-                    cfg.CreateMap<HouseCreateReqModel, House>().ForMember(dest => dest.Password, opt => opt.Ignore()); ;
+                    cfg.CreateMap<HouseCreateReqModel, House>(); ;
                 });
                 IMapper mapper = config.CreateMapper();
                 House NewHouse = mapper.Map<HouseCreateReqModel, House>(houseCreateReqModel);
-                if (houseCreateReqModel.Password == null)
-                {
-                    houseCreateReqModel.Password = Encoder.GenerateRandomPassword();
-                }
+               
 
-                var HashedPasswordModel = Encoder.CreateHashPassword(houseCreateReqModel.Password);
+                
 
                 NewHouse.OwnerId = ownerId;
-                NewHouse.Password = HashedPasswordModel.HashedPassword;
-                NewHouse.Salt = HashedPasswordModel.Salt;
                 NewHouse.RoomQuantity = 0;
                 NewHouse.AvailableRoom = 0;
                 NewHouse.Status = GeneralStatus.ACTIVE;

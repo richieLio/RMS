@@ -261,13 +261,12 @@ namespace BussinessObject.Services.RoomServices
 
                     //gửi mail mật khẩu cấp 2 cho khách
 
-                    string secondPassword = Generate2ndPassword();
+                   
                     string FilePath = "../BussinessObject/TemplateEmail/Create2ndPassword.html";
 
                     string Html = File.ReadAllText(FilePath);
-                    Html = Html.Replace("{{2ndPassword}}", secondPassword);
+                   
                     Html = Html.Replace("{{RoomName}}", $"{room.Name}");
-                    Html = Html.Replace("{{HouseAccount}}", $"{house.HouseAccount}");
                     //  Html = Html.Replace("{{HousePassword}}", $"{house.Password}");
                     bool emailSent = await EmailUltilities.SendEmail(customerCreateReqModel.Email, "Email Notification", Html);
 
@@ -279,9 +278,7 @@ namespace BussinessObject.Services.RoomServices
                         result.Message = "Email cannot be send.";
                         return result;
                     }
-                    //update mật khẩu cấp 2
-                    var HashedPasswordModel = Encoder.CreateHash2ndPassword(secondPassword);
-                    room.SecondPassword = HashedPasswordModel.HashedPassword;
+                    //update status
                     room.Status = RoomStatus.ENTIRE;
                     _ = await _roomRepository.Update(room);
 
@@ -453,7 +450,6 @@ namespace BussinessObject.Services.RoomServices
                     Address = House.Address,
                     RoomQuantity = House.RoomQuantity,
                     AvailableRoom = House.AvailableRoom,
-                    HouseAccount = House.HouseAccount,
                     Status = House.Status,
                 };
 
