@@ -10,6 +10,7 @@ namespace BussinessObject.Services.HouseServices
         public Task<ResultModel> UpdateHouse(Guid ownerId, HouseUpdateReqModel houseUpdateReqModel);
         public Task<ResultModel> UpdateHouseStatus(Guid ownerId, HouseUpdateStatusReqModel houseUpdateStatusReqModel);
         public Task<ResultModel> GetHouseById(Guid userId, Guid houseId);
+        Task<ResultModel> GetHouseRevenueForPeriod(Guid userId, DateTime startDate, DateTime endDate);
     }
 }
 

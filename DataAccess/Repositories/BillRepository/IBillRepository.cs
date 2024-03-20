@@ -9,5 +9,8 @@ namespace DataAccess.Repositories.BillRepository
         Task<Bill> GetBillDetails(Guid userId, Guid billId);
         Task<IEnumerable<Bill>> GetBillsByUserId(Guid userId);
         Task<List<BillService>> GetBillServicesForBill(Guid billId);
-        }
+      
+
+
+    }
 }

@@ -2,6 +2,7 @@
 using BussinessObject.Utilities;
 using DataAccess.Entities;
 using DataAccess.Models.BillModel;
+using DataAccess.Models.CustomerModel;
 using DataAccess.Models.ServiceModel;
 using DataAccess.Repositories.BillRepository;
 using DataAccess.Repositories.HouseRepository;
@@ -21,7 +22,7 @@ namespace BussinessObject.Services.BillServices
         private readonly IRoomRepository _roomRepository;
         private readonly IHouseRepository _houseRepository;
         private readonly IServiceFeeRepository _serviceFeeRepository;
-        public BillServices(IBillRepository billRepository, 
+        public BillServices(IBillRepository billRepository,
             IUserRepository userRepository, IRoomRepository roomRepository,
             IHouseRepository houseRepository, IServiceFeeRepository serviceFeeRepository)
         {
@@ -31,6 +32,12 @@ namespace BussinessObject.Services.BillServices
             _houseRepository = houseRepository;
             _serviceFeeRepository = serviceFeeRepository;
         }
+
+        
+
+
+
+
         public async Task<ResultModel> CreateBill(Guid userId, BillCreateReqModel billCreateReqModel)
         {
             ResultModel result = new ResultModel();
@@ -179,7 +186,7 @@ namespace BussinessObject.Services.BillServices
                     result.Message = "Bill not found";
                     return result;
                 }
-               
+
 
 
                 var billServices = await _billRepository.GetBillServicesForBill(billId);
@@ -206,7 +213,7 @@ namespace BussinessObject.Services.BillServices
                 billDetails.PaymentDate = bills.PaymentDate;
                 billDetails.RoomName = roomName;
                 billDetails.HouseName = houseName;
-                
+
 
 
 
@@ -215,7 +222,7 @@ namespace BussinessObject.Services.BillServices
                 {
                     billDetails.Services = billServices.Select(bs => new BillServiceDetails
                     {
-                        ServiceName = bs.Service?.Name, 
+                        ServiceName = bs.Service?.Name,
                         Quantity = bs.Quantity
                     }).ToList();
                 }
