@@ -62,5 +62,6 @@ namespace API.Controllers
             ResultModel result = await _billServices.getBillDetails(userId, billId);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
+      
     }
 }

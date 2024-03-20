@@ -41,6 +41,8 @@ namespace DataAccess.Repositories.BillRepository
             return true;
         }
 
+
+
         public async Task<Bill> GetBillDetails(Guid userId, Guid billId)
         {
             var billDetails = await (from bill in _context.Bills
@@ -61,18 +63,24 @@ namespace DataAccess.Repositories.BillRepository
 
             return billDetails;
         }
+
+
+
         public async Task<IEnumerable<Bill>> GetBillsByUserId(Guid userId)
         {
             return await _context.Bills.Where(b => b.CreateBy == userId).ToListAsync();
         }
         public async Task<List<BillService>> GetBillServicesForBill(Guid billId)
         {
-           
+
             return await _context.BillServices
                 .Where(bs => bs.BillId == billId)
-                .Include(bs => bs.Service) 
+                .Include(bs => bs.Service)
                 .ToListAsync();
         }
+
+        
+
 
     }
 }

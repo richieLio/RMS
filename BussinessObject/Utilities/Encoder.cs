@@ -116,26 +116,7 @@ namespace Business.Utilities
             var Encodetoken = new JwtSecurityTokenHandler().WriteToken(Token);
             return Encodetoken;
         }
-        public static string GenerateHouseJWT(House house)
-        {
-            var SecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Key));
-            var Credential = new SigningCredentials(SecurityKey, SecurityAlgorithms.HmacSha256);
-            List<Claim> Claims = new()
-            {
-                new Claim("houseid", house.Id.ToString()),
-                new Claim("houseaccount", house.HouseAccount),
-            };
-
-            var Token = new JwtSecurityToken(
-                issuer: Issuser,
-                audience: Issuser,
-                claims: Claims,
-                expires: DateTime.Now.AddHours(1),
-                signingCredentials: Credential
-                );
-            var Encodetoken = new JwtSecurityTokenHandler().WriteToken(Token);
-            return Encodetoken;
-        }
+       
         public static string GenerateRandomPassword()
         {
             int length = 12;

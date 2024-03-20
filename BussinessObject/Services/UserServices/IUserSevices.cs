@@ -11,6 +11,8 @@ namespace BussinessObject.Services.UserServices
 
         public Task<ResultModel> ResendVerifyOTP(UserResendOTPReqModel RegisterForm);
         public Task<ResultModel> CreateAccount(UserReqModel RegisterForm);
+        Task<ResultModel> CreateAccountWithFacebook(string accessToken); 
+        Task<ResultModel> LoginWithFacebook(string accessToken);
         Task<ResultModel> GetUserProfile(Guid userId);
         Task<ResultModel> UpdateUserProfile(UserUpdateModel updateModel);
         Task<ResultModel> ChangePassword(Guid userId, ChangePasswordReqModel changePasswordModel);

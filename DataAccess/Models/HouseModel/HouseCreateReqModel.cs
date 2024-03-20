@@ -9,9 +9,6 @@ namespace DataAccess.Models.HouseModel
 
         public string? Address { get; set; }
 
-        public string? HouseAccount { get; set; }
-
-        public string? Password { get; set; } = null!;
 
     }
     public class HouseRoomCreateReqModel
