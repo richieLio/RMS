@@ -43,7 +43,7 @@ namespace DataAccess.Repositories.RoomRepository
         public async Task<IEnumerable<Room>> GetRooms(Guid houseId)
         {
             return await _rooms
-                .Where(r => r.HouseId == houseId && r.Status == GeneralStatus.ACTIVE)
+                .Where(r => r.HouseId == houseId)
                 .ToListAsync();
         }
 
@@ -58,9 +58,9 @@ namespace DataAccess.Repositories.RoomRepository
             return await _context.Users
                 .AnyAsync(u => u.Id == customerId && u.Rooms.Any(r => r.Id == roomId));
         }
-        public async Task<Room> GetRoomByName(string name)
+        public async Task<Room> GetRoomByName(Guid houseId, string name)
         {
-            return await _context.Rooms.FirstOrDefaultAsync(r => r.Name == name);
+            return await _context.Rooms.FirstOrDefaultAsync(r => r.Name == name && r.HouseId == houseId);
         }
     }
 }

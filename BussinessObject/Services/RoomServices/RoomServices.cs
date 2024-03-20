@@ -113,12 +113,12 @@ namespace BussinessObject.Services.RoomServices
                 int? UpdateRoomQuantity = await _houseRepository.GetRoomQuantityByHouseId(roomCreateReqModel.HouseId);
                 var house = await _houseRepository.Get(roomCreateReqModel.HouseId);
                 var user = await _userRepository.GetUserByID(userId);
-                var existingRoom = await _roomRepository.GetRoomByName(roomCreateReqModel.Name);
+                var existingRoom = await _roomRepository.GetRoomByName(roomCreateReqModel.HouseId, roomCreateReqModel.Name);
                 if (existingRoom != null)
                 {
                     Result.IsSuccess = false;
                     Result.Code = 400;
-                    Result.Message = "House with this name already exists.";
+                    Result.Message = "Room with this name already exists.";
                     return Result;
                 }
                 if (user == null)
@@ -145,7 +145,7 @@ namespace BussinessObject.Services.RoomServices
                 newRoom.Id = Guid.NewGuid();
                 newRoom.HouseId = roomCreateReqModel.HouseId;
                 newRoom.Name = roomCreateReqModel.Name;
-                newRoom.Status = GeneralStatus.ACTIVE;
+                newRoom.Status = RoomStatus.EMPTY;
 
                 await _roomRepository.Insert(newRoom);
                 Result.IsSuccess = true;
@@ -177,6 +177,7 @@ namespace BussinessObject.Services.RoomServices
             {
                 var customerCreateReqModel = addCustomerToRoomReqModel.customerCreateReqModel;
                 var houseUpdateAvaiableRoom = addCustomerToRoomReqModel.houseUpdateAvaiableRoom;
+                var room = await _roomRepository.Get(customerCreateReqModel.RoomId);
 
                 var user = await _userRepository.GetUserByID(userId);
                 var house = await _houseRepository.Get(houseUpdateAvaiableRoom.HouseId);
@@ -196,7 +197,7 @@ namespace BussinessObject.Services.RoomServices
                     result.Message = "House not found.";
                     return result;
                 }
-                var check = await _userRepository.CheckIfCustomerIsExisted(customerCreateReqModel.Email, customerCreateReqModel.PhoneNumber,
+                var check = await _userRepository.CheckIfCustomerIsExisted(customerCreateReqModel.RoomId, customerCreateReqModel.Email, customerCreateReqModel.PhoneNumber,
                     customerCreateReqModel.CitizenIdNumber, customerCreateReqModel.LicensePlates);
                 if (check != null)
                 {
@@ -252,19 +253,20 @@ namespace BussinessObject.Services.RoomServices
                     await _contractRepository.Insert(contract);
 
                     // sửa số phòng còn trống
-                    house.AvailableRoom = availableRoom - 1;
-                    _ = await _houseRepository.Update(house);
+                    if (room.Status == RoomStatus.EMPTY)
+                    {
+                        house.AvailableRoom = availableRoom - 1;
+                        _ = await _houseRepository.Update(house);
+                    }
 
                     //gửi mail mật khẩu cấp 2 cho khách
 
-                    string secondPassword = Generate2ndPassword();
-                    var room = await _roomRepository.Get(customerCreateReqModel.RoomId);
+                   
                     string FilePath = "../BussinessObject/TemplateEmail/Create2ndPassword.html";
 
                     string Html = File.ReadAllText(FilePath);
-                    Html = Html.Replace("{{2ndPassword}}", secondPassword);
+                   
                     Html = Html.Replace("{{RoomName}}", $"{room.Name}");
-                    Html = Html.Replace("{{HouseAccount}}", $"{house.HouseAccount}");
                     //  Html = Html.Replace("{{HousePassword}}", $"{house.Password}");
                     bool emailSent = await EmailUltilities.SendEmail(customerCreateReqModel.Email, "Email Notification", Html);
 
@@ -276,9 +278,8 @@ namespace BussinessObject.Services.RoomServices
                         result.Message = "Email cannot be send.";
                         return result;
                     }
-                    //update mật khẩu cấp 2
-                    var HashedPasswordModel = Encoder.CreateHash2ndPassword(secondPassword);
-                    room.SecondPassword = HashedPasswordModel.HashedPassword;
+                    //update status
+                    room.Status = RoomStatus.ENTIRE;
                     _ = await _roomRepository.Update(room);
 
 
@@ -449,7 +450,6 @@ namespace BussinessObject.Services.RoomServices
                     Address = House.Address,
                     RoomQuantity = House.RoomQuantity,
                     AvailableRoom = House.AvailableRoom,
-                    HouseAccount = House.HouseAccount,
                     Status = House.Status,
                 };
 

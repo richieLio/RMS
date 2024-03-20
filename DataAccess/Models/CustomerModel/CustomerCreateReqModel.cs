@@ -35,20 +35,7 @@ namespace DataAccess.Models.CustomerModel
 
         public Guid CustomerId { set; get; }
     }
-    public class CustomerLoginReqModel
-    {
-        public string? HouseAccount { get; set; }
-
-        public string? Password { get; set; }
-    }
-    public class CustomerCreate2ndPassReqModel
-    {
-        public Guid RoomId { get; set; }
-        public string RoomName { get; set; }
-        public string HouseAccount { get; set; }
-        public string HousePassword { get; set; }
-        public string? SecondPassword { get; set; }
-    }
+   
 
     public class CustomerUpdateModel
     {

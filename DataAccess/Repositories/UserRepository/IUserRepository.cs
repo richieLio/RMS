@@ -9,7 +9,7 @@ namespace DataAccess.Repositories.UserRepository
 
         public Task<User> GetUserByID(Guid? userId);
 
-        public Task<User> CheckIfCustomerIsExisted(string Email, string phoneNumber, string CitizenIdNumber, string LicensePlates);
+        public Task<User> CheckIfCustomerIsExisted(Guid roomId, string Email, string phoneNumber, string CitizenIdNumber, string LicensePlates);
 
         Task<User> GetUserByVerificationToken(string otp);
 
