@@ -13,6 +13,7 @@ namespace BussinessObject.Services.ServiceFeeServices
     {
         Task<ResultModel> AddNewService(Guid userId, ServiceCreateReqModel service);
         Task<ResultModel> GetServicesList(Guid userId, int page);
+        Task<ResultModel> GetServicesList(Guid userId); // for creating bill
         Task<ResultModel> UpdateService(Guid userId, ServiceUpdateReqModel serviceUpdateModel);
         Task<ResultModel> RemoveService(Guid userId, Guid serviceId);
     }
