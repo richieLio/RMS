@@ -62,5 +62,32 @@ namespace DataAccess.Repositories.RoomRepository
         {
             return await _context.Rooms.FirstOrDefaultAsync(r => r.Name == name && r.HouseId == houseId);
         }
+        public async Task<List<object>> GetRoomRevenueForPeriod(Guid userId, Guid houseId, DateTime startDate, DateTime endDate)
+        {
+            var roomRevenueList = new List<object>();
+
+            var rooms = await GetRooms(houseId);
+
+            foreach (var room in rooms)
+            {
+                var roomBills = await _context.Bills
+                    .Where(b => b.RoomId == room.Id && b.Month >= startDate && b.Month <= endDate)
+                    .ToListAsync();
+
+                var roomTotalPrice = roomBills.Sum(b => b.TotalPrice ?? 0);
+
+                var roomData = new
+                {
+                    RoomId = room.Id,
+                    RoomName = room.Name,
+                    RoomTotalPrice = roomTotalPrice
+                };
+
+                roomRevenueList.Add(roomData);
+            }
+
+            return roomRevenueList;
+        }
+
     }
 }
