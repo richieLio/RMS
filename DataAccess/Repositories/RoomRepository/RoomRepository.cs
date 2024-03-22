@@ -71,7 +71,7 @@ namespace DataAccess.Repositories.RoomRepository
             foreach (var room in rooms)
             {
                 var roomBills = await _context.Bills
-                    .Where(b => b.RoomId == room.Id && b.Month >= startDate && b.Month <= endDate)
+                    .Where(b => b.RoomId != null && b.RoomId == room.Id && b.Month >= startDate && b.Month <= endDate)
                     .ToListAsync();
 
                 var roomTotalPrice = roomBills.Sum(b => b.TotalPrice ?? 0);

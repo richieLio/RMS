@@ -283,7 +283,7 @@ namespace BussinessObject.Services.HouseServices
         public async Task<ResultModel> GetHouseRevenueForPeriod(Guid userId, DateTime startDate, DateTime endDate)
         {
             ResultModel result = new ResultModel();
-
+           
             try
             {
                

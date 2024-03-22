@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BussinessObject.Utilities;
+using Data.Enums;
 using DataAccess.Entities;
 using DataAccess.Models.BillModel;
 using DataAccess.Models.CustomerModel;
@@ -43,6 +44,7 @@ namespace BussinessObject.Services.BillServices
             ResultModel result = new ResultModel();
             try
             {
+                
                 var user = await _userRepository.Get(userId);
                 if (user == null)
                 {
@@ -53,6 +55,14 @@ namespace BussinessObject.Services.BillServices
                         Message = "User not found."
                     };
                 }
+                var room = await _roomRepository.Get(billCreateReqModel.RoomId);
+                if (room.Status == RoomStatus.EMPTY)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 400;
+                    result.Message = "Empty room cannot create bill";
+                    return result;
+                }
 
                 var config = new MapperConfiguration(cfg =>
                 {
@@ -60,6 +70,7 @@ namespace BussinessObject.Services.BillServices
                 });
                 IMapper mapper = config.CreateMapper();
                 Bill newBill = mapper.Map<BillCreateReqModel, Bill>(billCreateReqModel);
+
 
                 // Thêm bill 
                 newBill.Id = Guid.NewGuid();

@@ -529,6 +529,7 @@ namespace BussinessObject.Services.RoomServices
             ResultModel result = new ResultModel();
             try
             {
+             
 
                 var roomRevenueData = await _roomRepository.GetRoomRevenueForPeriod(userId,houseId, startDate, endDate);
                 result.IsSuccess = true;
