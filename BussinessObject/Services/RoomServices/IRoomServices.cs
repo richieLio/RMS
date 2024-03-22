@@ -13,5 +13,6 @@ namespace BussinessObject.Services.RoomServices
         Task<ResultModel> GetRoomInformation(Guid roomId);
         Task<ResultModel> UpdateRoom(RoomUpdateReqModel roomUpdateReqModel);
         Task<ResultModel> UpdateRoomStatus(RoomUpdateStatusReqModel roomUpdateStatusReqModel);
+        Task<ResultModel> GetRoomRevenueForPeriod(Guid userId, Guid houseId, DateTime startDate, DateTime endDate);
     }
 }

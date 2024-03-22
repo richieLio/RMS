@@ -296,12 +296,7 @@ namespace BussinessObject.Services.RoomServices
             }
             return result;
         }
-        private string Generate2ndPassword()
-        {
-            Random rnd = new Random();
-            int otp = rnd.Next(100000, 999999);
-            return otp.ToString();
-        }
+     
         public async Task<ResultModel> GetCustomerByRoomId(int page, Guid userId, Guid roomId)
         {
             ResultModel result = new ResultModel();
@@ -529,5 +524,27 @@ namespace BussinessObject.Services.RoomServices
             }
             return result;
         }
+        public async Task<ResultModel> GetRoomRevenueForPeriod(Guid userId,Guid houseId, DateTime startDate, DateTime endDate)
+        {
+            ResultModel result = new ResultModel();
+            try
+            {
+
+                var roomRevenueData = await _roomRepository.GetRoomRevenueForPeriod(userId,houseId, startDate, endDate);
+                result.IsSuccess = true;
+                result.Code = 200;
+                result.Data = roomRevenueData;
+            }
+            catch (Exception e)
+            {
+                result.IsSuccess = false;
+                result.Code = 400;
+                result.ResponseFailed = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+            }
+
+            return result;
+        }
+
+
     }
 }

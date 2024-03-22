@@ -286,13 +286,8 @@ namespace BussinessObject.Services.HouseServices
 
             try
             {
-                // Call the GetHouseRevenueForPeriod method from the repository
-                var houseRevenueData = await _houseRepository.GetHouseRevenueForPeriod(userId, startDate, endDate);
-
                
-
-                
-
+                var houseRevenueData = await _houseRepository.GetHouseRevenueForPeriod(userId, startDate, endDate);
                 result.IsSuccess = true;
                 result.Code = 200;
                 result.Data = houseRevenueData;

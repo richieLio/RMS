@@ -75,7 +75,7 @@ namespace API.Controllers
             {
                 return BadRequest("Invalid user ID format");
             }
-            ResultModel result = await _roomServices.GetCustomerByRoomId(page,userId, roomId);
+            ResultModel result = await _roomServices.GetCustomerByRoomId(page, userId, roomId);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 
@@ -141,6 +141,25 @@ namespace API.Controllers
             }
             ResultModel result = await _roomServices.UpdateRoomStatus(Form);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+        [HttpGet("revenue")]
+        public async Task<IActionResult> GetRevenue(Guid houseId, DateTime startDate, DateTime endDate)
+        {
+            var userIdString = User.FindFirst("userid")?.Value;
+            if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out Guid userId))
+            {
+                return BadRequest("Unable to retrieve user ID");
+            }
+
+            try
+            {
+                var result = await _roomServices.GetRoomRevenueForPeriod(userId, houseId, startDate, endDate);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error occurred: {ex.Message}");
+            }
         }
     }
 }

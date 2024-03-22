@@ -59,6 +59,7 @@ namespace DataAccess.Repositories.HouseRepository
                 var houseData = new
                 {
                     HouseId = house.Id,
+                    HouseName = house.Name,
                     HouseTotalRevenue = houseRevenue
                 };
 
@@ -68,6 +69,13 @@ namespace DataAccess.Repositories.HouseRepository
             return houseRevenueList;
         }
 
+        public async Task<string> GetHouseName(Guid houseId)
+        {
+            return await _context.Houses
+                                .Where(h => h.Id == houseId)
+                                .Select(h => h.Name)
+                                .FirstOrDefaultAsync();
+        }
 
     }
 }
