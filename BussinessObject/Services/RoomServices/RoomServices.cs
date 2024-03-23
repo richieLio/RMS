@@ -202,7 +202,7 @@ namespace BussinessObject.Services.RoomServices
                 if (check != null)
                 {
                     result.IsSuccess = false;
-                    result.Code = 404;
+                    result.Code = 400;
                     result.Message = "User is existed";
                     return result;
                 }

@@ -432,130 +432,92 @@ namespace BussinessObject.Services.UserServices
             return Result;
         }
 
-        public async Task<ResultModel> CreateAccountWithFacebook(string accessToken)
+        public async Task<ResultModel> CreateOrLoginWithFacebook(string accessToken)
         {
             ResultModel result = new ResultModel();
 
             try
             {
-
                 // Make request to Facebook's Graph API using the access token
                 var response = await _httpClient.GetAsync($"https://graph.facebook.com/me?fields=email,name,picture.type(large)&access_token={accessToken}");
                 response.EnsureSuccessStatusCode();
                 var content = await response.Content.ReadAsStringAsync();
                 var userData = JsonConvert.DeserializeObject<FacebookUserData>(content);
 
-                // Assuming FacebookUserData contains properties for email, name, etc.
-                var newUser = new User
-                {
-                    Email = userData.Email,
-                    FullName = userData.Name.Length > 50 ? userData.Name.Substring(0, 50) : userData.Name,
-                    Role = UserEnum.OWNER,
-                    Status = UserStatus.ACTIVE,
-                    CreatedAt = DateTime.Now,
-                    Address = "N/A",
-                    Gender = "N/A",
-                    PhoneNumber = "N/A"
-                };
                 var user = await _userRepository.GetUserByEmail(userData.Email);
+
                 if (user != null)
                 {
-                    result.IsSuccess = false;
-                    result.Code = 400;
-                    result.Message = "You already have an account with this email!.";
-                    return result;
+                    // If user already exists, prepare login response
+                    UserLoginResModel loginResData = PrepareLoginResponse(user);
+                    result.IsSuccess = true;
+                    result.Code = 200;
+                    result.Data = loginResData;
+                    result.Message = "Login successful!";
                 }
                 else
                 {
+                    // If user does not exist, create a new account
+                    var newUser = CreateUserFromFacebookData(userData);
                     await _userRepository.Insert(newUser);
 
+                    // Prepare login response for the new user
+                    UserLoginResModel loginResData = PrepareLoginResponse(newUser);
+                    result.IsSuccess = true;
+                    result.Code = 200;
+                    result.Data = loginResData;
+                    result.Message = "Account created and logged in successfully!";
                 }
-                UserLoginResModel LoginResData = new UserLoginResModel();
-                var config = new MapperConfiguration(cfg =>
-                {
-                    cfg.CreateMap<User, UserResModel>();
-                });
-                IMapper mapper = config.CreateMapper();
-                UserResModel UserResModel = mapper.Map<User, UserResModel>(newUser);
-
-                LoginResData.User = UserResModel;
-                LoginResData.Token = Encoder.GenerateJWT(newUser);
-
-                result.IsSuccess = true;
-                result.Code = 200;
-                result.Data = LoginResData;
-                result.Message = "Account created successfully!";
-
             }
             catch (HttpRequestException ex)
             {
-                // Handle HTTP request exceptions
-                result.IsSuccess = false;
-                result.Code = (int)ex.StatusCode; // or set appropriate error code
-                result.Message = "An error occurred while creating the account.";
-                result.ResponseFailed = ex.Message;
+                HandleException(result, ex);
             }
             catch (Exception e)
             {
-                // Handle other exceptions
-                result.IsSuccess = false;
-                result.Code = 500;
-                result.Message = "An error occurred while creating the account.";
-                result.ResponseFailed = e.Message;
+                HandleException(result, e);
             }
 
             return result;
         }
-        public async Task<ResultModel> LoginWithFacebook(string accessToken)
+
+        private User CreateUserFromFacebookData(FacebookUserData userData)
         {
-            ResultModel result = new ResultModel();
-
-            try
+            return new User
             {
+                Email = userData.Email,
+                FullName = userData.Name.Length > 50 ? userData.Name.Substring(0, 50) : userData.Name,
+                Role = UserEnum.OWNER,
+                Status = UserStatus.ACTIVE,
+                CreatedAt = DateTime.Now,
+                Address = "N/A",
+                Gender = "N/A",
+                PhoneNumber = "N/A"
+            };
+        }
 
-                // Make request to Facebook's Graph API using the access token
-                var response = await _httpClient.GetAsync($"https://graph.facebook.com/me?fields=email,name,picture.type(large)&access_token={accessToken}");
-                response.EnsureSuccessStatusCode();
-                var content = await response.Content.ReadAsStringAsync();
-                var userData = JsonConvert.DeserializeObject<FacebookUserData>(content);
-                var user = await _userRepository.GetUserByEmail(userData.Email);
-                // Assuming FacebookUserData contains properties for email, name, etc.
-               
-                UserLoginResModel LoginResData = new UserLoginResModel();
-                var config = new MapperConfiguration(cfg =>
-                {
-                    cfg.CreateMap<User, UserResModel>();
-                });
-                IMapper mapper = config.CreateMapper();
-                UserResModel UserResModel = mapper.Map<User, UserResModel>(user);
-
-                LoginResData.User = UserResModel;
-                LoginResData.Token = Encoder.GenerateJWT(user);
-
-                result.IsSuccess = true;
-                result.Code = 200;
-                result.Data = LoginResData;
-                result.Message = "Account created successfully!";
-
-            }
-            catch (HttpRequestException ex)
+        private UserLoginResModel PrepareLoginResponse(User user)
+        {
+            var config = new MapperConfiguration(cfg =>
             {
-                // Handle HTTP request exceptions
-                result.IsSuccess = false;
-                result.Code = (int)ex.StatusCode; // or set appropriate error code
-                result.Message = "An error occurred while creating the account.";
-                result.ResponseFailed = ex.Message;
-            }
-            catch (Exception e)
-            {
-                // Handle other exceptions
-                result.IsSuccess = false;
-                result.Code = 500;
-                result.Message = "An error occurred while creating the account.";
-                result.ResponseFailed = e.Message;
-            }
+                cfg.CreateMap<User, UserResModel>();
+            });
+            IMapper mapper = config.CreateMapper();
+            UserResModel userResModel = mapper.Map<User, UserResModel>(user);
 
-            return result;
+            return new UserLoginResModel
+            {
+                User = userResModel,
+                Token = Encoder.GenerateJWT(user)
+            };
+        }
+
+        private void HandleException(ResultModel result, Exception ex)
+        {
+            result.IsSuccess = false;
+            result.Code = ex is HttpRequestException ? (int)((HttpRequestException)ex).StatusCode : 500;
+            result.Message = "An error occurred while creating the account.";
+            result.ResponseFailed = ex.Message;
         }
 
     }

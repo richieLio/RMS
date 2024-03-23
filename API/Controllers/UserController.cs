@@ -30,16 +30,16 @@ namespace API.Controllers
             ResultModel result = await _user.CreateAccount(Form);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
-        [HttpPost("fb-register")]
+       /* [HttpPost("fb-register")]
         public async Task<IActionResult> CreateFbUser(string accessToken)
         {
             ResultModel result = await _user.CreateAccountWithFacebook(accessToken);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
-        }
+        }*/
         [HttpPost("fb-login")]
         public async Task<IActionResult> LoginFacebook(string accessToken)
         {
-            ResultModel result = await _user.LoginWithFacebook(accessToken);
+            ResultModel result = await _user.CreateOrLoginWithFacebook(accessToken);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 
