@@ -520,5 +520,75 @@ namespace BussinessObject.Services.UserServices
             result.ResponseFailed = ex.Message;
         }
 
+        public async Task<ResultModel> CreateOrLoginWithGoogle(string credential)
+        {
+            ResultModel result = new ResultModel();
+
+            try
+            {
+                // Decode and verify JWT token
+                var handler = new JwtSecurityTokenHandler();
+                var jsonToken = handler.ReadToken(credential) as JwtSecurityToken;
+
+                if (jsonToken == null)
+                {
+                    throw new Exception("Invalid JWT token");
+                }
+
+                // Extract user information from the JWT token
+                var email = jsonToken.Payload["email"].ToString();
+
+                var user = await _userRepository.GetUserByEmail(email);
+
+                if (user != null)
+                {
+                    // If user already exists, prepare login response
+                    UserLoginResModel loginResData = PrepareLoginResponse(user);
+                    result.IsSuccess = true;
+                    result.Code = 200;
+                    result.Data = loginResData;
+                    result.Message = "Login successful!";
+                }
+                else
+                {
+                    // If user does not exist, create a new account
+                    var newUser = CreateUserFromGoogleData(jsonToken.Payload);
+                    await _userRepository.Insert(newUser);
+
+                    // Prepare login response for the new user
+                    UserLoginResModel loginResData = PrepareLoginResponse(newUser);
+                    result.IsSuccess = true;
+                    result.Code = 200;
+                    result.Data = loginResData;
+                    result.Message = "Account created and logged in successfully!";
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                HandleException(result, ex);
+            }
+            catch (Exception e)
+            {
+                HandleException(result, e);
+            }
+
+            return result;
+        }
+        private User CreateUserFromGoogleData(JwtPayload payload)
+        {
+            var email = payload["email"].ToString();
+            var fullname = payload["name"].ToString();
+            return new User
+            {
+                Email = email,
+                FullName = fullname, 
+                Role = UserEnum.OWNER,
+                Status = UserStatus.ACTIVE,
+                CreatedAt = DateTime.Now,
+                Address = "N/A",
+                Gender = "N/A",
+                PhoneNumber = "N/A"
+            };
+        }
     }
 }

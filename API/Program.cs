@@ -107,7 +107,7 @@ builder.Services.AddTransient<IBillRepository, BillRepository>();
 builder.Services.AddTransient<ICustomerRepository, CustomerRepository>();
 builder.Services.AddTransient<IServiceFeeRepository, ServiceFeeRepository>();
 
-//Add CORS
+// Add CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll",
@@ -127,12 +127,21 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+// Enable CORS
 app.UseCors("AllowAll");
 
 app.UseHttpsRedirection();
 
+app.UseRouting();
+
+app.UseAuthentication();
+
 app.UseAuthorization();
 
-app.MapControllers();
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapControllers();
+});
 
 app.Run();

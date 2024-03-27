@@ -19,6 +19,6 @@ namespace BussinessObject.Services.UserServices
         Task<ResultModel> VerifyEmail(EmailVerificationReqModel verificationModel);
 
         Task<ResultModel> CreateOrLoginWithFacebook(string accessToken);
-    
+        Task<ResultModel> CreateOrLoginWithGoogle(string credential);
     }
 }
