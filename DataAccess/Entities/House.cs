@@ -20,12 +20,6 @@ public partial class House
 
     public int? AvailableRoom { get; set; }
 
-    public string? HouseAccount { get; set; }
-
-    public byte[]? Password { get; set; }
-
-    public byte[]? Salt { get; set; }
-
     public string? Status { get; set; }
 
     public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();

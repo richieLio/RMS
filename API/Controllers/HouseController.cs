@@ -98,6 +98,26 @@ namespace API.Controllers
             ResultModel result = await _houseServices.UpdateHouseStatus(userId, Form);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
+        [HttpGet("revenue")]
+        public async Task<IActionResult> GetRevenue(DateTime startDate, DateTime endDate)
+        {
+            var userIdString = User.FindFirst("userid")?.Value;
+            if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out Guid userId))
+            {
+                return BadRequest("Unable to retrieve user ID");
+            }
+
+            try
+            {
+                var result = await _houseServices.GetHouseRevenueForPeriod(userId, startDate, endDate);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error occurred: {ex.Message}");
+            }
+        }
     }
 }
+    
 

@@ -11,5 +11,7 @@ namespace DataAccess.Repositories.HouseRepository
 
         Task<int> GetAvailableRoomByHouseId(Guid houseId);
         Task<House> GetHouseByName(string name);
+        Task<List<object>> GetHouseRevenueForPeriod(Guid userId, DateTime startDate, DateTime endDate);
+        Task<string> GetHouseName(Guid houseId);
     }
 }

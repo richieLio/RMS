@@ -5,6 +5,10 @@ using DataAccess.Models.EmailModel;
 using DataAccess.Models.UserModel;
 using DataAccess.Repositories.UserRepository;
 using DataAccess.ResultModel;
+using MySqlX.XDevAPI.Common;
+using Newtonsoft.Json;
+using System.IdentityModel.Tokens.Jwt;
+using System.Net.Http;
 using EmailUltilities = Business.Utilities.Email;
 using Encoder = Business.Utilities.Encoder;
 
@@ -14,9 +18,11 @@ namespace BussinessObject.Services.UserServices
     {
 
         private readonly IUserRepository _userRepository;
-        public UserSevices(IUserRepository userRepository)
+        private readonly HttpClient _httpClient;
+        public UserSevices(IUserRepository userRepository, HttpClient httpClient)
         {
             _userRepository = userRepository;
+            _httpClient = httpClient;
         }
 
 
@@ -424,6 +430,165 @@ namespace BussinessObject.Services.UserServices
                 Result.ResponseFailed = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
             }
             return Result;
+        }
+
+        public async Task<ResultModel> CreateOrLoginWithFacebook(string accessToken)
+        {
+            ResultModel result = new ResultModel();
+
+            try
+            {
+                // Make request to Facebook's Graph API using the access token
+                var response = await _httpClient.GetAsync($"https://graph.facebook.com/me?fields=email,name,picture.type(large)&access_token={accessToken}");
+                response.EnsureSuccessStatusCode();
+                var content = await response.Content.ReadAsStringAsync();
+                var userData = JsonConvert.DeserializeObject<FacebookUserData>(content);
+
+                var user = await _userRepository.GetUserByEmail(userData.Email);
+
+                if (user != null)
+                {
+                    // If user already exists, prepare login response
+                    UserLoginResModel loginResData = PrepareLoginResponse(user);
+                    result.IsSuccess = true;
+                    result.Code = 200;
+                    result.Data = loginResData;
+                    result.Message = "Login successful!";
+                }
+                else
+                {
+                    // If user does not exist, create a new account
+                    var newUser = CreateUserFromFacebookData(userData);
+                    await _userRepository.Insert(newUser);
+
+                    // Prepare login response for the new user
+                    UserLoginResModel loginResData = PrepareLoginResponse(newUser);
+                    result.IsSuccess = true;
+                    result.Code = 200;
+                    result.Data = loginResData;
+                    result.Message = "Account created and logged in successfully!";
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                HandleException(result, ex);
+            }
+            catch (Exception e)
+            {
+                HandleException(result, e);
+            }
+
+            return result;
+        }
+
+        private User CreateUserFromFacebookData(FacebookUserData userData)
+        {
+            return new User
+            {
+                Email = userData.Email,
+                FullName = userData.Name.Length > 50 ? userData.Name.Substring(0, 50) : userData.Name,
+                Role = UserEnum.OWNER,
+                Status = UserStatus.ACTIVE,
+                CreatedAt = DateTime.Now,
+                Address = "N/A",
+                Gender = "N/A",
+                PhoneNumber = "N/A"
+            };
+        }
+
+        private UserLoginResModel PrepareLoginResponse(User user)
+        {
+            var config = new MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap<User, UserResModel>();
+            });
+            IMapper mapper = config.CreateMapper();
+            UserResModel userResModel = mapper.Map<User, UserResModel>(user);
+
+            return new UserLoginResModel
+            {
+                User = userResModel,
+                Token = Encoder.GenerateJWT(user)
+            };
+        }
+
+        private void HandleException(ResultModel result, Exception ex)
+        {
+            result.IsSuccess = false;
+            result.Code = ex is HttpRequestException ? (int)((HttpRequestException)ex).StatusCode : 500;
+            result.Message = "An error occurred while creating the account.";
+            result.ResponseFailed = ex.Message;
+        }
+
+        public async Task<ResultModel> CreateOrLoginWithGoogle(string credential)
+        {
+            ResultModel result = new ResultModel();
+
+            try
+            {
+                // Decode and verify JWT token
+                var handler = new JwtSecurityTokenHandler();
+                var jsonToken = handler.ReadToken(credential) as JwtSecurityToken;
+
+                if (jsonToken == null)
+                {
+                    throw new Exception("Invalid JWT token");
+                }
+
+                // Extract user information from the JWT token
+                var email = jsonToken.Payload["email"].ToString();
+
+                var user = await _userRepository.GetUserByEmail(email);
+
+                if (user != null)
+                {
+                    // If user already exists, prepare login response
+                    UserLoginResModel loginResData = PrepareLoginResponse(user);
+                    result.IsSuccess = true;
+                    result.Code = 200;
+                    result.Data = loginResData;
+                    result.Message = "Login successful!";
+                }
+                else
+                {
+                    // If user does not exist, create a new account
+                    var newUser = CreateUserFromGoogleData(jsonToken.Payload);
+                    await _userRepository.Insert(newUser);
+
+                    // Prepare login response for the new user
+                    UserLoginResModel loginResData = PrepareLoginResponse(newUser);
+                    result.IsSuccess = true;
+                    result.Code = 200;
+                    result.Data = loginResData;
+                    result.Message = "Account created and logged in successfully!";
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                HandleException(result, ex);
+            }
+            catch (Exception e)
+            {
+                HandleException(result, e);
+            }
+
+            return result;
+        }
+        private User CreateUserFromGoogleData(JwtPayload payload)
+        {
+            var email = payload["email"].ToString();
+            var fullname = payload["name"].ToString();
+            return new User
+            {
+                Email = email,
+                FullName = fullname, 
+                Role = UserEnum.OWNER,
+                Status = UserStatus.ACTIVE,
+                CreatedAt = DateTime.Now,
+                Address = "N/A",
+                Gender = "N/A",
+                PhoneNumber = "N/A"
+            };
         }
     }
 }

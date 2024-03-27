@@ -12,13 +12,16 @@ namespace DataAccess.Repositories.UserRepository
             _context = context;
         }
 
-        public async Task<User> CheckIfCustomerIsExisted(string Email, string phoneNumber, string CitizenIdNumber, string LicensePlates)
+        public async Task<User> CheckIfCustomerIsExisted(Guid roomId, string Email, string phoneNumber, string CitizenIdNumber, string LicensePlates)
         {
             return await _context.Users
-                .Where(x => x.Email.Equals(Email) || x.PhoneNumber.Equals(phoneNumber)
-                            || x.CitizenIdNumber.Equals(CitizenIdNumber) || x.LicensePlates.Equals(LicensePlates)).FirstOrDefaultAsync();
-
-
+                .Include(u => u.Rooms)
+                .Where(u => u.Rooms.Any(r => r.Id == roomId) &&
+                            (u.Email.Equals(Email) ||
+                             u.PhoneNumber.Equals(phoneNumber) ||
+                             u.CitizenIdNumber.Equals(CitizenIdNumber) ||
+                             u.LicensePlates.Equals(LicensePlates)))
+                .FirstOrDefaultAsync();
         }
 
         public async Task<User> GetUserByEmail(string Email)

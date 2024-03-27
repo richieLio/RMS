@@ -42,6 +42,40 @@ namespace DataAccess.Repositories.HouseRepository
         {
             return await _context.Houses.FirstOrDefaultAsync(h => h.Name == name);
         }
+        public async Task<List<object>> GetHouseRevenueForPeriod(Guid userId, DateTime startDate, DateTime endDate)
+        {
+            var houseRevenueList = new List<object>();
+
+            var houses = await GetAllHouseByUserId(userId);
+
+            foreach (var house in houses)
+            {
+                var houseBills = await _context.Bills
+                    .Where(b => b.Room != null && b.Room.HouseId == house.Id && b.Month >= startDate && b.Month <= endDate)
+                    .ToListAsync();
+
+                var houseRevenue = houseBills.Sum(b => b.TotalPrice ?? 0);
+
+                var houseData = new
+                {
+                    HouseId = house.Id,
+                    HouseName = house.Name,
+                    HouseTotalRevenue = houseRevenue
+                };
+
+                houseRevenueList.Add(houseData);
+            }
+
+            return houseRevenueList;
+        }
+
+        public async Task<string> GetHouseName(Guid houseId)
+        {
+            return await _context.Houses
+                                .Where(h => h.Id == houseId)
+                                .Select(h => h.Name)
+                                .FirstOrDefaultAsync();
+        }
 
     }
 }

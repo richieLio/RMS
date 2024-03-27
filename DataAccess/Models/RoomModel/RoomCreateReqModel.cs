@@ -12,6 +12,7 @@ namespace DataAccess.Models.RoomModel
     }
     public class RoomCreateReqModel
     {
+        public Guid RoomId { get; set; }
         public Guid HouseId { get; set; }
         public string Name { get; set; }
     }

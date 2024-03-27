@@ -8,6 +8,8 @@ using DataAccess.Repositories.HouseRepository;
 using DataAccess.Repositories.RoomRepository;
 using DataAccess.Repositories.UserRepository;
 using DataAccess.ResultModel;
+using Google.Api.Gax;
+using Microsoft.EntityFrameworkCore;
 using MySqlX.XDevAPI.Common;
 using Encoder = Business.Utilities.Encoder;
 
@@ -42,24 +44,19 @@ namespace BussinessObject.Services.HouseServices
 
                 var config = new MapperConfiguration(cfg =>
                 {
-                    cfg.CreateMap<HouseCreateReqModel, House>().ForMember(dest => dest.Password, opt => opt.Ignore()); ;
+                    cfg.CreateMap<HouseCreateReqModel, House>(); ;
                 });
                 IMapper mapper = config.CreateMapper();
                 House NewHouse = mapper.Map<HouseCreateReqModel, House>(houseCreateReqModel);
-                if (houseCreateReqModel.Password == null)
-                {
-                    houseCreateReqModel.Password = Encoder.GenerateRandomPassword();
-                }
 
-                var HashedPasswordModel = Encoder.CreateHashPassword(houseCreateReqModel.Password);
+
+
 
                 NewHouse.OwnerId = ownerId;
-                NewHouse.Password = HashedPasswordModel.HashedPassword;
-                NewHouse.Salt = HashedPasswordModel.Salt;
                 NewHouse.RoomQuantity = 0;
                 NewHouse.AvailableRoom = 0;
                 NewHouse.Status = GeneralStatus.ACTIVE;
-               
+
                 _ = await _houseRepository.Insert(NewHouse);
                 Result.IsSuccess = true;
                 Result.Code = 200;
@@ -283,5 +280,28 @@ namespace BussinessObject.Services.HouseServices
             return result;
 
         }
+        public async Task<ResultModel> GetHouseRevenueForPeriod(Guid userId, DateTime startDate, DateTime endDate)
+        {
+            ResultModel result = new ResultModel();
+           
+            try
+            {
+               
+                var houseRevenueData = await _houseRepository.GetHouseRevenueForPeriod(userId, startDate, endDate);
+                result.IsSuccess = true;
+                result.Code = 200;
+                result.Data = houseRevenueData;
+            }
+            catch (Exception e)
+            {
+                result.IsSuccess = false;
+                result.Code = 400;
+                result.ResponseFailed = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+            }
+
+            return result;
+        }
+
+       
     }
 }

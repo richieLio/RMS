@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using BussinessObject.Utilities;
+using Data.Enums;
 using DataAccess.Entities;
 using DataAccess.Models.BillModel;
+using DataAccess.Models.CustomerModel;
 using DataAccess.Models.ServiceModel;
 using DataAccess.Repositories.BillRepository;
 using DataAccess.Repositories.HouseRepository;
@@ -21,7 +23,7 @@ namespace BussinessObject.Services.BillServices
         private readonly IRoomRepository _roomRepository;
         private readonly IHouseRepository _houseRepository;
         private readonly IServiceFeeRepository _serviceFeeRepository;
-        public BillServices(IBillRepository billRepository, 
+        public BillServices(IBillRepository billRepository,
             IUserRepository userRepository, IRoomRepository roomRepository,
             IHouseRepository houseRepository, IServiceFeeRepository serviceFeeRepository)
         {
@@ -31,11 +33,18 @@ namespace BussinessObject.Services.BillServices
             _houseRepository = houseRepository;
             _serviceFeeRepository = serviceFeeRepository;
         }
+
+        
+
+
+
+
         public async Task<ResultModel> CreateBill(Guid userId, BillCreateReqModel billCreateReqModel)
         {
             ResultModel result = new ResultModel();
             try
             {
+                
                 var user = await _userRepository.Get(userId);
                 if (user == null)
                 {
@@ -46,6 +55,14 @@ namespace BussinessObject.Services.BillServices
                         Message = "User not found."
                     };
                 }
+                var room = await _roomRepository.Get(billCreateReqModel.RoomId);
+                if (room.Status == RoomStatus.EMPTY)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 400;
+                    result.Message = "Empty room cannot create bill";
+                    return result;
+                }
 
                 var config = new MapperConfiguration(cfg =>
                 {
@@ -53,6 +70,7 @@ namespace BussinessObject.Services.BillServices
                 });
                 IMapper mapper = config.CreateMapper();
                 Bill newBill = mapper.Map<BillCreateReqModel, Bill>(billCreateReqModel);
+
 
                 // Thêm bill 
                 newBill.Id = Guid.NewGuid();
@@ -179,7 +197,7 @@ namespace BussinessObject.Services.BillServices
                     result.Message = "Bill not found";
                     return result;
                 }
-               
+
 
 
                 var billServices = await _billRepository.GetBillServicesForBill(billId);
@@ -206,7 +224,7 @@ namespace BussinessObject.Services.BillServices
                 billDetails.PaymentDate = bills.PaymentDate;
                 billDetails.RoomName = roomName;
                 billDetails.HouseName = houseName;
-                
+
 
 
 
@@ -215,7 +233,7 @@ namespace BussinessObject.Services.BillServices
                 {
                     billDetails.Services = billServices.Select(bs => new BillServiceDetails
                     {
-                        ServiceName = bs.Service?.Name, 
+                        ServiceName = bs.Service?.Name,
                         Quantity = bs.Quantity
                     }).ToList();
                 }

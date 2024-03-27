@@ -43,7 +43,7 @@ namespace DataAccess.Repositories.RoomRepository
         public async Task<IEnumerable<Room>> GetRooms(Guid houseId)
         {
             return await _rooms
-                .Where(r => r.HouseId == houseId && r.Status == GeneralStatus.ACTIVE)
+                .Where(r => r.HouseId == houseId)
                 .ToListAsync();
         }
 
@@ -58,9 +58,36 @@ namespace DataAccess.Repositories.RoomRepository
             return await _context.Users
                 .AnyAsync(u => u.Id == customerId && u.Rooms.Any(r => r.Id == roomId));
         }
-        public async Task<Room> GetRoomByName(string name)
+        public async Task<Room> GetRoomByName(Guid houseId, string name)
         {
-            return await _context.Rooms.FirstOrDefaultAsync(r => r.Name == name);
+            return await _context.Rooms.FirstOrDefaultAsync(r => r.Name == name && r.HouseId == houseId);
         }
+        public async Task<List<object>> GetRoomRevenueForPeriod(Guid userId, Guid houseId, DateTime startDate, DateTime endDate)
+        {
+            var roomRevenueList = new List<object>();
+
+            var rooms = await GetRooms(houseId);
+
+            foreach (var room in rooms)
+            {
+                var roomBills = await _context.Bills
+                    .Where(b => b.RoomId != null && b.RoomId == room.Id && b.Month >= startDate && b.Month <= endDate)
+                    .ToListAsync();
+
+                var roomTotalPrice = roomBills.Sum(b => b.TotalPrice ?? 0);
+
+                var roomData = new
+                {
+                    RoomId = room.Id,
+                    RoomName = room.Name,
+                    RoomTotalPrice = roomTotalPrice
+                };
+
+                roomRevenueList.Add(roomData);
+            }
+
+            return roomRevenueList;
+        }
+
     }
 }
